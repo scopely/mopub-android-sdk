@@ -14,7 +14,8 @@ import static com.mopub.mobileads.MoPubErrorCode.NETWORK_TIMEOUT;
 import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 
 public class CustomEventInterstitialAdapter implements CustomEventInterstitialListener {
-    public static final int TIMEOUT_DELAY = 30000;
+    public static final String TIMEOUT_KEY = "Timeout";
+    public static final long TIMEOUT_DELAY = 30000;
 
     private boolean mInvalidated;
     private CustomEventInterstitialAdapterListener mCustomEventInterstitialAdapterListener;
@@ -57,11 +58,15 @@ public class CustomEventInterstitialAdapter implements CustomEventInterstitialLi
         mLocalExtras = moPubInterstitial.getLocalExtras();
         if (moPubInterstitial.getLocation() != null) mLocalExtras.put("location", moPubInterstitial.getLocation());
     }
-    
+
     void loadInterstitial() {
         if (isInvalidated() || mCustomEventInterstitial == null) return;
 
-        mHandler.postDelayed(mTimeout, TIMEOUT_DELAY);
+//        mHandler.postDelayed(mTimeout, TIMEOUT_DELAY);//compute the timeout delay instead.
+        long timeoutDelay = getTimeoutDelay();
+        if(timeoutDelay > 0) {
+            mHandler.postDelayed(mTimeout, timeoutDelay);
+        }
         mCustomEventInterstitial.loadInterstitial(mContext, this, mLocalExtras, mServerExtras);
     }
     
@@ -161,4 +166,13 @@ public class CustomEventInterstitialAdapter implements CustomEventInterstitialLi
     void setCustomEventInterstitial(CustomEventInterstitial interstitial) {
         mCustomEventInterstitial = interstitial;
     }
-}
+
+    public long getTimeoutDelay() {
+        long timeoutDelay = TIMEOUT_DELAY;
+        if(mServerExtras.containsKey(TIMEOUT_KEY)) {
+            String strTimeoutInSeconds = mServerExtras.get(TIMEOUT_KEY);
+            long timeoutInSeconds = Integer.valueOf(strTimeoutInSeconds);
+            timeoutDelay = 1000l * timeoutInSeconds;
+        }
+        return timeoutDelay;
+    }}
