@@ -10,6 +10,9 @@ public class BaseHtmlWebView extends BaseWebView {
     public BaseHtmlWebView(Context context) {
         super(context);
 
+        //RHT: This is to disable hardware acceleration, which is believed to be the cause of signal 11 SIGSEGV.
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
         disableScrollingAndZoom();
         getSettings().setJavaScriptEnabled(true);
         getSettings().setPluginsEnabled(true);
