@@ -2,6 +2,7 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Build;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -11,11 +12,12 @@ public class BaseHtmlWebView extends BaseWebView {
         super(context);
 
         //RHT: This is to disable hardware acceleration, which is believed to be the cause of signal 11 SIGSEGV.
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
 
         disableScrollingAndZoom();
         getSettings().setJavaScriptEnabled(true);
-        getSettings().setPluginsEnabled(true);
         setBackgroundColor(Color.TRANSPARENT);
     }
 
