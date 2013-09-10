@@ -24,7 +24,7 @@ public class BaseWebView extends WebView {
         }
 
         if (VersionCode.currentApiLevel().isBelow(VersionCode.FROYO)) {
-            getSettings().setPluginsEnabled(enabled);
+            return;
         } else {
             try {
                 Class<Enum> pluginStateClass = (Class<Enum>) Class.forName("android.webkit.WebSettings$PluginState");
