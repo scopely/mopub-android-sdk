@@ -454,9 +454,21 @@ public class AdViewController {
         return networkInfo != null && networkInfo.isConnected();
     }
 
-    void setAdContentView(View view) {
-        getMoPubView().removeAllViews();
-        getMoPubView().addView(view, getAdLayoutParams(view));
+    void setAdContentView(final View view) {
+        // XXX: This method is called from the WebViewClient's callbacks, which has caused an error on a small portion of devices
+        // We suspect that the code below may somehow be running on the wrong UI Thread in the rare case.
+        // see: http://stackoverflow.com/questions/10426120/android-got-calledfromwrongthreadexception-in-onpostexecute-how-could-it-be
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                MoPubView moPubView = getMoPubView();
+                if(moPubView == null) {
+                    return;
+                }
+                moPubView.removeAllViews();
+                moPubView.addView(view, getAdLayoutParams(view));
+            }
+        });
     }
 
     private FrameLayout.LayoutParams getAdLayoutParams(View view) {

@@ -32,15 +32,17 @@ public class FacebookKeywordProvider {
 
         lastQueryTime = new Date().getTime();
 
+        Cursor cursor = null;
+
         try {
             String projection[] = {ID_COLUMN_NAME};
-            Cursor c = context.getContentResolver().query(ID_URL, projection, null, null, null);
+            cursor = context.getContentResolver().query(ID_URL, projection, null, null, null);
             
-            if (c == null || !c.moveToFirst()) {
+            if (cursor == null || !cursor.moveToFirst()) {
                 return null;
             }
             
-            String attributionId = c.getString(c.getColumnIndex(ID_COLUMN_NAME));
+            String attributionId = cursor.getString(cursor.getColumnIndex(ID_COLUMN_NAME));
             
             if (attributionId == null || attributionId.length() == 0) {
                 return null;
@@ -52,6 +54,10 @@ public class FacebookKeywordProvider {
         } catch (Exception exception) {
             Log.d("MoPub", "Unable to retrieve FBATTRID: " + exception.toString());
             return null;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
 }

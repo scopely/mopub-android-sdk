@@ -1,5 +1,6 @@
 package com.mopub.mobileads;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
@@ -7,7 +8,11 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import static com.mopub.mobileads.util.VersionCode.ICE_CREAM_SANDWICH;
+import static com.mopub.mobileads.util.VersionCode.currentApiLevel;
+
 public class BaseHtmlWebView extends BaseWebView {
+    @SuppressLint("SetJavaScriptEnabled")
     public BaseHtmlWebView(Context context) {
         super(context);
 
@@ -18,6 +23,10 @@ public class BaseHtmlWebView extends BaseWebView {
 
         disableScrollingAndZoom();
         getSettings().setJavaScriptEnabled(true);
+
+        if (currentApiLevel().isAtLeast(ICE_CREAM_SANDWICH)) {
+            enablePlugins(true);
+        }
         setBackgroundColor(Color.TRANSPARENT);
     }
 
