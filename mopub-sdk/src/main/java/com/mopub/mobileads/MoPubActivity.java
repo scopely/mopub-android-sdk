@@ -75,6 +75,8 @@ public class MoPubActivity extends BaseInterstitialActivity {
         String clickthroughUrl = intent.getStringExtra(CLICKTHROUGH_URL_KEY);
         String htmlResponse = intent.getStringExtra(HTML_RESPONSE_BODY_KEY);
 
+        HtmlInterstitialWebViewFactory.initialize(this);
+
         htmlInterstitialWebView = HtmlInterstitialWebViewFactory.create(new BroadcastingInterstitialListener(), isScrollable, redirectUrl, clickthroughUrl);
         htmlInterstitialWebView.loadHtmlResponse(htmlResponse);
 
@@ -84,6 +86,9 @@ public class MoPubActivity extends BaseInterstitialActivity {
     @Override
     protected void onDestroy() {
         htmlInterstitialWebView.destroy();
+
+        HtmlInterstitialWebViewFactory.cleanup();
+
         super.onDestroy();
     }
 
