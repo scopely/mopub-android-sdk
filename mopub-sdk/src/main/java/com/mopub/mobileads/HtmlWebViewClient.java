@@ -100,7 +100,13 @@ class HtmlWebViewClient extends WebViewClient {
 
     private boolean handleNativeBrowserScheme(String url){
         Uri uri = Uri.parse(url);
-        String urlToOpenInNativeBrowser = uri.getQueryParameter("url");
+
+        String urlToOpenInNativeBrowser = null;
+        try {
+            urlToOpenInNativeBrowser = uri.getQueryParameter("url");
+        } catch (UnsupportedOperationException e) {
+            Log.w("MoPub", "Cannot get query parameters for URI: " + url);
+        }
         if (!"mopubnativebrowser".equals(uri.getScheme()) || !"navigate".equals(uri.getHost())
                 || urlToOpenInNativeBrowser == null) return false;
 
