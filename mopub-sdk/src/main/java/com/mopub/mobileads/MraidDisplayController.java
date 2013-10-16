@@ -1,8 +1,45 @@
+/*
+ * Copyright (c) 2010-2013, MoPub Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *  Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ *
+ *  Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ *
+ *  Neither the name of 'MoPub Inc.' nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software
+ *   without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.*;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -14,11 +51,20 @@ import android.os.Handler;
 import android.provider.CalendarContract;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.*;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.URLUtil;
-import android.widget.*;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 import com.mopub.mobileads.MraidView.ExpansionStyle;
 import com.mopub.mobileads.MraidView.NativeCloseButtonStyle;
 import com.mopub.mobileads.MraidView.PlacementType;
@@ -32,31 +78,38 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
-import java.security.InvalidParameterException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-import static com.mopub.mobileads.MraidCommandRegistry.*;
+import static com.mopub.mobileads.MraidCommandRegistry.MRAID_JAVASCRIPT_COMMAND_CREATE_CALENDAR_EVENT;
+import static com.mopub.mobileads.MraidCommandRegistry.MRAID_JAVASCRIPT_COMMAND_GET_CURRENT_POSITION;
+import static com.mopub.mobileads.MraidCommandRegistry.MRAID_JAVASCRIPT_COMMAND_GET_DEFAULT_POSITION;
+import static com.mopub.mobileads.MraidCommandRegistry.MRAID_JAVASCRIPT_COMMAND_GET_MAX_SIZE;
+import static com.mopub.mobileads.MraidCommandRegistry.MRAID_JAVASCRIPT_COMMAND_GET_SCREEN_SIZE;
+import static com.mopub.mobileads.MraidCommandRegistry.MRAID_JAVASCRIPT_COMMAND_STORE_PICTURE;
 import static com.mopub.mobileads.MraidCommandStorePicture.MIME_TYPE_HEADER;
 import static com.mopub.mobileads.MraidView.BaseMraidListener;
 import static com.mopub.mobileads.resource.Drawables.INTERSTITIAL_CLOSE_BUTTON_NORMAL;
 import static com.mopub.mobileads.resource.Drawables.INTERSTITIAL_CLOSE_BUTTON_PRESSED;
-import static com.mopub.mobileads.util.MraidUtils.*;
+import static com.mopub.mobileads.util.MraidUtils.ANDROID_CALENDAR_CONTENT_TYPE;
+import static com.mopub.mobileads.util.MraidUtils.isCalendarAvailable;
+import static com.mopub.mobileads.util.MraidUtils.isInlineVideoAvailable;
+import static com.mopub.mobileads.util.MraidUtils.isSmsAvailable;
+import static com.mopub.mobileads.util.MraidUtils.isStorePictureSupported;
+import static com.mopub.mobileads.util.MraidUtils.isTelAvailable;
+import static com.mopub.mobileads.util.ResponseHeader.LOCATION;
 
 class MraidDisplayController extends MraidAbstractController {
     private static final String LOGTAG = "MraidDisplayController";
     private static final long VIEWABILITY_TIMER_MILLIS = 3000;
     private static final int CLOSE_BUTTON_SIZE_DP = 50;
-    private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZZZZZ";
+    private static final String[] DATE_FORMATS = {
+            "yyyy-MM-dd'T'HH:mm:ssZZZZZ",
+            "yyyy-MM-dd'T'HH:mmZZZZZ"
+    };
     private static final int MAX_NUMBER_DAYS_IN_MONTH = 31;
 
     // The view's current state.
@@ -267,7 +320,7 @@ class MraidDisplayController extends MraidAbstractController {
 
         View expansionContentView = getMraidView();
         if (url != null) {
-            mTwoPartExpansionView = new MraidView(getContext(), ExpansionStyle.DISABLED,
+            mTwoPartExpansionView = new MraidView(getContext(), getMraidView().getAdConfiguration(), ExpansionStyle.DISABLED,
                     NativeCloseButtonStyle.AD_CONTROLLED, PlacementType.INLINE);
             mTwoPartExpansionView.setMraidListener(new BaseMraidListener() {
                 public void onClose(MraidView view, ViewState newViewState) {
@@ -339,7 +392,7 @@ class MraidDisplayController extends MraidAbstractController {
                     HttpResponse httpResponse = httpClient.execute(httpGet);
                     pictureInputStream = httpResponse.getEntity().getContent();
 
-                    String redirectLocation = HttpResponses.extractHeader(httpResponse, "Location");
+                    String redirectLocation = HttpResponses.extractHeader(httpResponse, LOCATION);
                     if (redirectLocation != null) {
                         uri = URI.create(redirectLocation);
                     }
@@ -447,24 +500,31 @@ class MraidDisplayController extends MraidAbstractController {
     }
 
     private Map<String, Object> translateJSParamsToAndroidCalendarEventMapping(Map<String, String> params) throws Exception {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
         Map<String, Object> validatedParamsMapping = new HashMap<String, Object>();
         if (!params.containsKey("description") || !params.containsKey("start")) {
-            throw new InvalidParameterException("missing start and description fields");
+            throw new IllegalArgumentException("Missing start and description fields");
         }
 
         validatedParamsMapping.put(CalendarContract.Events.TITLE, params.get("description"));
-        try {
-            Date date = dateFormat.parse(params.get("start"));
-            validatedParamsMapping.put(CalendarContract.EXTRA_EVENT_BEGIN_TIME, date.getTime());
-            if(params.containsKey("end")) {
-                date = dateFormat.parse(params.get("end"));
-                validatedParamsMapping.put(CalendarContract.EXTRA_EVENT_END_TIME, date.getTime());
+
+        if (params.containsKey("start") && params.get("start") != null) {
+            Date startDateTime = parseDate(params.get("start"));
+            if (startDateTime != null) {
+                validatedParamsMapping.put(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startDateTime.getTime());
+            } else {
+                throw new IllegalArgumentException("Invalid calendar event: start time is malformed. Date format expecting (yyyy-MM-DDTHH:MM:SS-xx:xx) or (yyyy-MM-DDTHH:MM-xx:xx) i.e. 2013-08-14T09:00:01-08:00");
             }
-        } catch (ParseException pe) {
-            throw new InvalidParameterException("Invalid date format. Date format expecting (yyyy-MM-DDTHH:MM:SS-xx:xx) i.e. 2013-08-14T09:00:00-08:00");
-        } catch (NullPointerException npe) {
-            throw new InvalidParameterException("invalid calendar event: start or end is null");
+        } else {
+            throw new IllegalArgumentException("Invalid calendar event: start is null.");
+        }
+
+        if (params.containsKey("end") && params.get("end") != null) {
+            Date endDateTime = parseDate(params.get("end"));
+            if (endDateTime != null) {
+                validatedParamsMapping.put(CalendarContract.EXTRA_EVENT_END_TIME, endDateTime.getTime());
+            } else {
+                throw new IllegalArgumentException("Invalid calendar event: end time is malformed. Date format expecting (yyyy-MM-DDTHH:MM:SS-xx:xx) or (yyyy-MM-DDTHH:MM-xx:xx) i.e. 2013-08-14T09:00:01-08:00");
+            }
         }
 
         if (params.containsKey("location")) {
@@ -487,6 +547,21 @@ class MraidDisplayController extends MraidAbstractController {
         validatedParamsMapping.put(CalendarContract.Events.RRULE, parseRecurrenceRule(params));
 
         return validatedParamsMapping;
+    }
+
+    private Date parseDate(String dateTime) {
+        Date result = null;
+        for (int i=0; i<DATE_FORMATS.length; i++) {
+            try {
+                result = new SimpleDateFormat(DATE_FORMATS[i]).parse(dateTime);
+                if (result != null) {
+                    break;
+                }
+            } catch (ParseException e) {
+                // an exception is okay, just try the next format and find the first one that works
+            }
+        }
+        return result;
     }
 
     private String parseRecurrenceRule(Map<String, String> params) throws IllegalArgumentException {
@@ -533,7 +608,7 @@ class MraidDisplayController extends MraidAbstractController {
         return rule.toString();
     }
 
-    private String translateWeekIntegersToDays(String expression) throws InvalidParameterException{
+    private String translateWeekIntegersToDays(String expression) throws IllegalArgumentException{
         StringBuilder daysResult = new StringBuilder();
         boolean[] daysAlreadyCounted = new boolean[7];
         String[] days = expression.split(",");
@@ -547,13 +622,13 @@ class MraidDisplayController extends MraidAbstractController {
             }
         }
         if (days.length == 0) {
-            throw new InvalidParameterException("must have at least 1 day of the week if specifying repeating weekly");
+            throw new IllegalArgumentException("must have at least 1 day of the week if specifying repeating weekly");
         }
         daysResult.deleteCharAt(daysResult.length()-1);
         return daysResult.toString();
     }
 
-    private String translateMonthIntegersToDays(String expression) throws InvalidParameterException {
+    private String translateMonthIntegersToDays(String expression) throws IllegalArgumentException {
         StringBuilder daysResult = new StringBuilder();
         boolean[] daysAlreadyCounted = new boolean[2*MAX_NUMBER_DAYS_IN_MONTH +1]; //for -31 to 31
         String[] days = expression.split(",");
@@ -566,13 +641,13 @@ class MraidDisplayController extends MraidAbstractController {
             }
         }
         if (days.length == 0) {
-            throw new InvalidParameterException("must have at least 1 day of the month if specifying repeating weekly");
+            throw new IllegalArgumentException("must have at least 1 day of the month if specifying repeating weekly");
         }
         daysResult.deleteCharAt(daysResult.length() - 1);
         return daysResult.toString();
     }
 
-    private String dayNumberToDayOfWeekString(int number) throws InvalidParameterException {
+    private String dayNumberToDayOfWeekString(int number) throws IllegalArgumentException {
         String dayOfWeek;
         switch(number) {
             case 0: dayOfWeek="SU"; break;
@@ -582,18 +657,18 @@ class MraidDisplayController extends MraidAbstractController {
             case 4: dayOfWeek="TH"; break;
             case 5: dayOfWeek="FR"; break;
             case 6: dayOfWeek="SA"; break;
-            default: throw new InvalidParameterException("invalid day of week " + number);
+            default: throw new IllegalArgumentException("invalid day of week " + number);
         }
         return dayOfWeek;
     }
 
-    private String dayNumberToDayOfMonthString(int number) throws InvalidParameterException {
+    private String dayNumberToDayOfMonthString(int number) throws IllegalArgumentException {
         String dayOfMonth;
         // https://android.googlesource.com/platform/frameworks/opt/calendar/+/504844526f1b7afec048c6d2976ffb332670d5ba/src/com/android/calendarcommon2/EventRecurrence.java
         if (number != 0 && number >= -MAX_NUMBER_DAYS_IN_MONTH && number <= MAX_NUMBER_DAYS_IN_MONTH) {
             dayOfMonth = "" + number;
         } else {
-            throw new InvalidParameterException("invalid day of month " + number);
+            throw new IllegalArgumentException("invalid day of month " + number);
         }
         return dayOfMonth;
     }
