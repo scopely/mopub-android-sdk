@@ -21,15 +21,11 @@ android {
             manifest {
                 srcFile 'mopub-sdk/AndroidManifest.xml'
             }
+            java.srcDirs = ['mopub-sdk/src/main']
+        }
 
-            java {
-                srcDirs = ['mopub-sdk/src']
-            }
-            resources.srcDirs = ['mopub-sdk/src']
-            aidl.srcDirs = ['mopub-sdk/src']
-            renderscript.srcDirs = ['mopub-sdk/src']
-            res.srcDirs = ['mopub-sdk/res']
-            assets.srcDirs = ['mopub-sdk/assets']
+        test {
+            java.srcDirs = ['mopub-sdk/src/test']
         }
     }
 }
