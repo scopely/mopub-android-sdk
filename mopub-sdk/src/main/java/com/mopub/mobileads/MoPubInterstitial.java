@@ -168,6 +168,9 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         }
         mActivity = activity;
 
+        if(mInterstitialView != null) {
+            mInterstitialView.destroy();
+        }
         mInterstitialView = new MoPubInterstitialView(mActivity);
         mInterstitialView.setAdUnitId(mAdUnitId);
 
