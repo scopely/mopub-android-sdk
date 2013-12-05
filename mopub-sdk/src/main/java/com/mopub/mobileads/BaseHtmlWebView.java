@@ -78,7 +78,12 @@ public class BaseHtmlWebView extends BaseWebView implements UserClickListener {
 
         Log.d("MoPub", "Loading url: " + url);
         if (url.startsWith("javascript:")) {
-            super.loadUrl(url);
+            // If destroy has been called on this webview, we won't be able to navigate
+            try {
+                super.loadUrl(url);
+            } catch (NullPointerException e) {
+                Log.e("MoPub", "Attempt to call javascript on destroyed WebView", e);
+            }
         }
     }
 
