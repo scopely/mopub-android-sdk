@@ -1,5 +1,9 @@
 package com.mopub.mobileads;
 
+import java.com.mopub.mobileads.Logger;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Part of the Scopely™ Platform
  * © 2013 Scopely, Inc.
@@ -8,85 +12,209 @@ public class Log {
     @SuppressWarnings("UnusedDeclaration")
     private static final String TAG = Log.class.getCanonicalName();
 
-    private static final String VERBOSE = "verbose";
-    private static final String DEBUG = "debug";
-    private static final String INFO = "info";
-    private static final String WARN = "warn";
-    private static final String ERROR = "error";
-    private static final String WTF = "wtf";
+    private static Map<Logger, Integer> loggerIntegerMap;
 
-    public static int v(String tag, String msg) {
-        combineAndLog(VERBOSE, tag, msg, null);
+    private static Map<Logger, Integer> getLoggerIntegerMap() {
+        if(loggerIntegerMap == null) {
+            loggerIntegerMap = new HashMap<Logger, Integer>();
+        }
+        return loggerIntegerMap;
+    }
+
+    private interface LoggerSideEffect {
+        void performSideEffect(Logger logger);
+    }
+
+    public static void registerLogger(Logger logger) {
+        Map<Logger, Integer> loggerIntegerMap = getLoggerIntegerMap();
+        if(!loggerIntegerMap.containsKey(logger)) {
+            loggerIntegerMap.put(logger, 0);
+        }
+        loggerIntegerMap.put(logger, loggerIntegerMap.get(logger) + 1);
+    }
+
+    public static void unregisterLogger(Logger logger) {
+        Map<Logger, Integer> loggerIntegerMap = getLoggerIntegerMap();
+        if(!loggerIntegerMap.containsKey(logger)) {
+            throw new RuntimeException("trying to unregister an unregistered logger");
+        }
+        loggerIntegerMap.put(logger, loggerIntegerMap.get(logger) - 1);
+        if(loggerIntegerMap.get(logger) == 0) {
+            loggerIntegerMap.remove(logger);
+        }
+    }
+
+    public static int v(final String tag, final String msg) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.v(tag, msg);
+                    }
+                }
+        );
         return android.util.Log.v(tag, msg);
     }
 
-    public static int v(String tag, String msg, Throwable tr) {
-        combineAndLog(VERBOSE, tag, msg, tr);
+    public static int v(final String tag, final String msg, final Throwable tr) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.v(tag, msg, tr);
+                    }
+                }
+        );
         return android.util.Log.v(tag, msg, tr);
     }
 
-    public static int d(String tag, String msg) {
-        combineAndLog(DEBUG, tag, msg, null);
+    public static int d(final String tag, final String msg) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.d(tag, msg);
+                    }
+                }
+        );
         return android.util.Log.d(tag, msg);
     }
 
-    public static int d(String tag, String msg, Throwable tr) {
-        combineAndLog(DEBUG, tag, msg, tr);
+    public static int d(final String tag, final String msg, final Throwable tr) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.d(tag, msg, tr);
+                    }
+                }
+        );
         return android.util.Log.d(tag, msg, tr);
     }
 
-    public static int i(String tag, String msg) {
-        combineAndLog(INFO, tag, msg, null);
+    public static int i(final String tag, final String msg) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.i(tag, msg);
+                    }
+                }
+        );
         return android.util.Log.i(tag, msg);
     }
 
-    public static int i(String tag, String msg, Throwable tr) {
-        combineAndLog(INFO, tag, msg, tr);
+    public static int i(final String tag, final String msg, final Throwable tr) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.i(tag, msg, tr);
+                    }
+                }
+        );
         return android.util.Log.i(tag, msg, tr);
     }
 
-    public static int w(String tag, String msg) {
-        combineAndLog(WARN, tag, msg, null);
+    public static int w(final String tag, final String msg) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.w(tag, msg);
+                    }
+                }
+        );
         return android.util.Log.w(tag, msg);
     }
 
-    public static int w(String tag, String msg, Throwable tr) {
-        combineAndLog(WARN, tag, msg, tr);
+    public static int w(final String tag, final String msg, final Throwable tr) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.w(tag, msg, tr);
+                    }
+                }
+        );
         return android.util.Log.w(tag, msg, tr);
     }
 
-    public static int w(String tag, Throwable tr) {
-        combineAndLog(WARN, tag, null, tr);
+    public static int w(final String tag, final Throwable tr) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.w(tag, tr);
+                    }
+                }
+        );
         return android.util.Log.w(tag, tr);
     }
 
-    public static int e(String tag, String msg) {
-        combineAndLog(ERROR, tag, msg, null);
+    public static int e(final String tag, final String msg) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.e(tag, msg);
+                    }
+                }
+        );
         return android.util.Log.e(tag, msg);
     }
 
-    public static int e(String tag, String msg, Throwable tr) {
-        combineAndLog(ERROR, tag, msg, tr);
+    public static int e(final String tag, final String msg, final Throwable tr) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.e(tag, msg, tr);
+                    }
+                }
+        );
         return android.util.Log.e(tag, msg, tr);
     }
 
-    public static int wtf(String tag, String msg) {
-        combineAndLog(WTF, tag, msg, null);
+    public static int wtf(final String tag, final String msg) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.wtf(tag, msg);
+                    }
+                }
+        );
         return android.util.Log.wtf(tag, msg);
     }
 
-    public static int wtf(String tag, Throwable tr) {
-        combineAndLog(WTF, tag, null, tr);
+    public static int wtf(final String tag, final Throwable tr) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.wtf(tag, tr);
+                    }
+                }
+        );
         return android.util.Log.wtf(tag, tr);
     }
 
-    public static int wtf(String tag, String msg, Throwable tr) {
-        combineAndLog(WTF, tag, msg, tr);
+    public static int wtf(final String tag, final String msg, final Throwable tr) {
+        broadcastLoggerSideEffect(
+                new LoggerSideEffect() {
+                    @Override
+                    public void performSideEffect(Logger logger) {
+                        logger.wtf(tag, msg, tr);
+                    }
+                }
+        );
         return android.util.Log.wtf(tag, msg, tr);
     }
 
-    private static void combineAndLog(String level, String tag, String msg, Throwable tr) {
-        String message = level + "/" + tag + (msg != null ? msg : "") + ": " + (tr != null ? tr.getMessage() : "");
-        MoPubLogManager.logMessage(message);
+    private static void broadcastLoggerSideEffect(LoggerSideEffect loggerSideEffect) {
+        for(Logger logger : loggerIntegerMap.keySet()) {
+            loggerSideEffect.performSideEffect(logger);
+        }
     }
 }
