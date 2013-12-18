@@ -32,8 +32,6 @@
 
 package com.mopub.mobileads;
 
-import android.util.Log;
-
 import java.util.*;
 
 import static com.mopub.mobileads.MraidCommandRegistry.MRAID_JAVASCRIPT_COMMAND_PLAY_VIDEO;

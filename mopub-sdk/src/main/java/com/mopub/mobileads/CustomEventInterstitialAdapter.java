@@ -34,7 +34,6 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 
 import com.mopub.mobileads.CustomEventInterstitial.CustomEventInterstitialListener;
 import com.mopub.mobileads.factories.CustomEventInterstitialFactory;

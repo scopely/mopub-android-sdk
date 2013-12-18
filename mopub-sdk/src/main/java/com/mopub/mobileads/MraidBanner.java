@@ -72,6 +72,7 @@ class MraidBanner extends CustomEventBanner {
     protected void onInvalidate() {
         if (mMraidView != null) {
             resetMraidListener();
+            Views.removeFromParent(mMraidView);
             mMraidView.destroy();
         }
     }

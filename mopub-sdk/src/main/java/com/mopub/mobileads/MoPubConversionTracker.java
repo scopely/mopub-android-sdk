@@ -34,7 +34,6 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
