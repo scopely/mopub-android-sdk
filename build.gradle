@@ -52,7 +52,7 @@ uploadArchives {
         // the maven plugin features this deployer
         mavenDeployer {
             // we deploy to the release repository in this case
-            repository(url: "https://scopelybin.artifactoryonline.com/scopelybin/libs-snapshots-local/") {
+            repository(url: "https://scopelybin.artifactoryonline.com/scopelybin/libs-releases-local/") {
                 authentication(userName: artifactoryDeployUser, password: artifactoryDeployPassword)
             }
             pom.project {
