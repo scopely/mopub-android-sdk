@@ -1,4 +1,4 @@
-package java.com.mopub.mobileads;
+package com.mopub.mobileads;
 
 /**
  * Part of the Scopely™ Platform

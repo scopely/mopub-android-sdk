@@ -1,4 +1,4 @@
-package java.com.mopub.mobileads;
+package com.mopub.mobileads;
 
 import java.util.HashMap;
 import java.util.Map;
