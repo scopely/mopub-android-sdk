@@ -33,7 +33,6 @@
 package com.mopub.mobileads;
 
 import android.os.AsyncTask;
-import android.util.Log;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;

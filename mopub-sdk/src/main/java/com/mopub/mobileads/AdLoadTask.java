@@ -34,7 +34,6 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.net.Uri;
-import android.util.Log;
 import com.mopub.mobileads.util.Strings;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;

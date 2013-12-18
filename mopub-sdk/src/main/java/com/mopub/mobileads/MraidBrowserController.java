@@ -35,7 +35,6 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 class MraidBrowserController extends MraidAbstractController {
     private static final String LOGTAG = "MraidBrowserController";

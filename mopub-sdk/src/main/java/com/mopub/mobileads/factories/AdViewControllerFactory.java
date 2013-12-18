@@ -33,10 +33,10 @@
 package com.mopub.mobileads.factories;
 
 import android.content.Context;
-import android.util.Log;
 import com.mopub.mobileads.AdViewController;
 import com.mopub.mobileads.MoPubView;
 
+import com.mopub.mobileads.Log;
 import java.lang.reflect.Constructor;
 
 import static com.mopub.mobileads.util.VersionCode.ECLAIR_MR1;
