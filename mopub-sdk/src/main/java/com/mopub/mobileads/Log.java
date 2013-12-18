@@ -22,11 +22,11 @@ public class Log {
         return loggerIntegerMap;
     }
 
-    private interface LoggerSideEffect {
+    private static interface LoggerSideEffect {
         void performSideEffect(Logger logger);
     }
 
-    public static void setLogsEnabled(boolean logsEnabled) {    
+    public static void setLogsEnabled(boolean logsEnabled) {
         Log.logsEnabled = logsEnabled;
     }
 
