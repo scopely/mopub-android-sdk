@@ -1,6 +1,5 @@
 package com.mopub.mobileads;
 
-import java.com.mopub.mobileads.Logger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +10,8 @@ import java.util.Map;
 public class Log {
     @SuppressWarnings("UnusedDeclaration")
     private static final String TAG = Log.class.getCanonicalName();
+
+    private static boolean logsEnabled = true;
 
     private static Map<Logger, Integer> loggerIntegerMap;
 
@@ -23,6 +24,10 @@ public class Log {
 
     private interface LoggerSideEffect {
         void performSideEffect(Logger logger);
+    }
+
+    public static void setLogsEnabled(boolean logsEnabled) {    
+        Log.logsEnabled = logsEnabled;
     }
 
     public static void registerLogger(Logger logger) {
@@ -45,6 +50,9 @@ public class Log {
     }
 
     public static int v(final String tag, final String msg) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -57,6 +65,9 @@ public class Log {
     }
 
     public static int v(final String tag, final String msg, final Throwable tr) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -69,6 +80,9 @@ public class Log {
     }
 
     public static int d(final String tag, final String msg) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -81,6 +95,9 @@ public class Log {
     }
 
     public static int d(final String tag, final String msg, final Throwable tr) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -93,6 +110,9 @@ public class Log {
     }
 
     public static int i(final String tag, final String msg) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -105,6 +125,9 @@ public class Log {
     }
 
     public static int i(final String tag, final String msg, final Throwable tr) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -117,6 +140,9 @@ public class Log {
     }
 
     public static int w(final String tag, final String msg) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -129,6 +155,9 @@ public class Log {
     }
 
     public static int w(final String tag, final String msg, final Throwable tr) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -141,6 +170,9 @@ public class Log {
     }
 
     public static int w(final String tag, final Throwable tr) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -153,6 +185,9 @@ public class Log {
     }
 
     public static int e(final String tag, final String msg) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -165,6 +200,9 @@ public class Log {
     }
 
     public static int e(final String tag, final String msg, final Throwable tr) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -177,6 +215,9 @@ public class Log {
     }
 
     public static int wtf(final String tag, final String msg) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -189,6 +230,9 @@ public class Log {
     }
 
     public static int wtf(final String tag, final Throwable tr) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
@@ -201,6 +245,9 @@ public class Log {
     }
 
     public static int wtf(final String tag, final String msg, final Throwable tr) {
+        if(!logsEnabled) {
+            return 0;
+        }
         broadcastLoggerSideEffect(
                 new LoggerSideEffect() {
                     @Override
