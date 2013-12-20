@@ -260,7 +260,7 @@ public class Log {
     }
 
     private static void broadcastLoggerSideEffect(LoggerSideEffect loggerSideEffect) {
-        for(Logger logger : loggerIntegerMap.keySet()) {
+        if(loggerIntegerMap != null) for(Logger logger : loggerIntegerMap.keySet()) {
             loggerSideEffect.performSideEffect(logger);
         }
     }
