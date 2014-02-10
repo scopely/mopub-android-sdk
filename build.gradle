@@ -44,7 +44,7 @@ android {
     }
 }
 
-version = '1.16.0.5'
+version = '1.17.1.1'
 group = 'com.mopub.mobileads'
 
 uploadArchives {
