@@ -37,7 +37,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-class ViewGestureDetector extends GestureDetector {
+public class ViewGestureDetector extends GestureDetector {
     private final View mView;
 
     interface UserClickListener {
@@ -49,7 +49,7 @@ class ViewGestureDetector extends GestureDetector {
     private AdAlertGestureListener mAdAlertGestureListener;
     private UserClickListener mUserClickListener;
 
-    ViewGestureDetector(Context context, View view, AdConfiguration adConfiguration)  {
+    public ViewGestureDetector(Context context, View view, AdConfiguration adConfiguration)  {
         this(context, view, new AdAlertGestureListener(view, adConfiguration));
     }
 
