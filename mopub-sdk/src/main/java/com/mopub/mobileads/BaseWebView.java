@@ -41,6 +41,8 @@ import com.mopub.mobileads.util.WebViews;
 import java.lang.reflect.Method;
 
 public class BaseWebView extends WebView {
+    protected boolean mIsDestroyed;
+
     public BaseWebView(Context context) {
         /*
          * Important: don't allow any WebView subclass to be instantiated using
@@ -84,7 +86,14 @@ public class BaseWebView extends WebView {
 
     @Override
     public void destroy() {
+        mIsDestroyed = true;
+
         Views.removeFromParent(this);
         super.destroy();
+    }
+
+    @Deprecated // for testing
+    void setIsDestroyed(boolean isDestroyed) {
+        mIsDestroyed = isDestroyed;
     }
 }
