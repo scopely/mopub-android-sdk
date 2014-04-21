@@ -78,9 +78,6 @@ public class MraidBrowser extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        getWindow().requestFeature(Window.FEATURE_PROGRESS);
-        getWindow().setFeatureInt(Window.FEATURE_PROGRESS, Window.PROGRESS_VISIBILITY_ON);
-        
         setContentView(getMraidBrowserView());
         
         Intent intent = getIntent();
