@@ -37,9 +37,10 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.view.View;
+
+import com.mopub.common.util.DateAndTime;
+import com.mopub.common.util.Streams;
 import com.mopub.mobileads.util.Base64;
-import com.mopub.mobileads.util.DateAndTime;
-import com.mopub.mobileads.util.Streams;
 
 import java.io.*;
 import java.text.SimpleDateFormat;

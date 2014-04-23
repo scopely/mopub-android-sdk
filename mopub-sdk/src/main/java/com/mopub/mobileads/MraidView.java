@@ -41,9 +41,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.mopub.common.util.Strings;
 import com.mopub.mobileads.factories.HttpClientFactory;
 import com.mopub.mobileads.resource.MraidJavascript;
-import com.mopub.mobileads.util.Strings;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -62,7 +64,7 @@ import static com.mopub.mobileads.ViewGestureDetector.UserClickListener;
 public class MraidView extends BaseWebView implements UserClickListener {
     private static final String LOGTAG = "MraidView";
     
-    private MraidBrowserController mBrowserController;
+    private MoPubBrowserController mBrowserController;
     private MraidDisplayController mDisplayController;
     
     private WebViewClient mWebViewClient;
@@ -162,7 +164,7 @@ public class MraidView extends BaseWebView implements UserClickListener {
         
         getSettings().setJavaScriptEnabled(true);
         
-        mBrowserController = new MraidBrowserController(this);
+        mBrowserController = new MoPubBrowserController(this);
         mDisplayController = new MraidDisplayController(this, expStyle, buttonStyle);
         
         mWebViewClient = new MraidWebViewClient();
@@ -243,7 +245,7 @@ public class MraidView extends BaseWebView implements UserClickListener {
 
     // Controllers /////////////////////////////////////////////////////////////////////////////////
     
-    protected MraidBrowserController getBrowserController() {
+    protected MoPubBrowserController getBrowserController() {
         return mBrowserController;
     }
     
