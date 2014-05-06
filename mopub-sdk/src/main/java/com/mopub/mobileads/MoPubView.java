@@ -42,11 +42,14 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.webkit.WebViewDatabase;
 import android.widget.FrameLayout;
+
+import com.mopub.common.LocationService;
 import com.mopub.mobileads.factories.AdViewControllerFactory;
 import com.mopub.mobileads.factories.CustomEventBannerAdapterFactory;
 
 import java.util.*;
 
+import static com.mopub.common.LocationService.*;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_NOT_FOUND;
 import static com.mopub.mobileads.util.ResponseHeader.CUSTOM_EVENT_DATA;
 import static com.mopub.mobileads.util.ResponseHeader.CUSTOM_EVENT_NAME;
@@ -59,10 +62,6 @@ public class MoPubView extends FrameLayout {
         public void onBannerClicked(MoPubView banner);
         public void onBannerExpanded(MoPubView banner);
         public void onBannerCollapsed(MoPubView banner);
-    }
-
-    public enum LocationAwareness {
-        LOCATION_AWARENESS_NORMAL, LOCATION_AWARENESS_TRUNCATED, LOCATION_AWARENESS_DISABLED
     }
 
     public static final String HOST = "ads.mopub.com";
@@ -97,7 +96,7 @@ public class MoPubView extends FrameLayout {
 
         mContext = context;
         mIsInForeground = (getVisibility() == VISIBLE);
-        mLocationAwareness = LocationAwareness.LOCATION_AWARENESS_NORMAL;
+        mLocationAwareness = LocationAwareness.NORMAL;
 
         setHorizontalScrollBarEnabled(false);
         setVerticalScrollBarEnabled(false);

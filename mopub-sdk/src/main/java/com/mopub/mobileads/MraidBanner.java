@@ -36,7 +36,7 @@ import android.content.Context;
 import android.net.Uri;
 import com.mopub.mobileads.MraidView.ViewState;
 import com.mopub.mobileads.factories.MraidViewFactory;
-import com.mopub.mobileads.util.Views;
+import com.mopub.common.util.Views;
 
 import java.util.*;
 
