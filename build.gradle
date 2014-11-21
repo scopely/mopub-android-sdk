@@ -44,8 +44,21 @@ android {
     }
 }
 
+artifactId = 'mopub-android-sdk'
 version = '2.0.0.0'
 group = 'com.mopub.mobileads'
+
+android.libraryVariants.all { variant ->
+    def name = variant.buildType.name
+    if (name.equals('debug')) {
+        return;
+    }
+    def jarTask = project.tasks.create "jar${name.capitalize()}", Jar
+    jarTask.dependsOn variant.javaCompile
+    jarTask.from variant.javaCompile.destinationDir
+    jarTask.appendix 'jar'
+    artifacts.add('archives', jarTask)
+}
 
 uploadArchives {
     repositories {
@@ -55,8 +68,23 @@ uploadArchives {
             repository(url: "https://scopelybin.artifactoryonline.com/scopelybin/libs-releases-local/") {
                 authentication(userName: artifactoryDeployUser, password: artifactoryDeployPassword)
             }
-            pom.project {
-                artifactId 'mopub-android'
+
+            addFilter('jar') { artifact, file ->
+                artifact.name.contains('jar')
+            }
+
+            addFilter('aar') { artifact, file ->
+                !artifact.name.contains('jar')
+            }
+
+            pom('jar').project {
+                artifactId 'mopub-android-sdk-jar'
+                name 'Mopub Android SDK in a Jar'
+                packaging 'jar'
+            }
+
+            pom('aar').project {
+                artifactId 'mopub-android-sdk'
                 name 'Mopub Android SDK'
                 packaging 'aar'
             }
