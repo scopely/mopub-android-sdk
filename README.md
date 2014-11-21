@@ -12,7 +12,7 @@ The MoPub SDK is distributed as source code that you can include in your applica
 
 - **[MoPub Android Full SDK.zip](http://bit.ly/YUdU9v)**
 
-  Includes everything you need to serve HTML and MRAID MoPub advertisiments *and* built-in support for two major third party ad networks - [Google AdMob](http://www.google.com/ads/admob/) and [Millennial Media](http://www.millennialmedia.com/) - including the required third party binaries.
+  Includes everything you need to serve HTML and MRAID MoPub advertisiments *and* built-in support for Millennial Media third party ad network - [Millennial Media](http://www.millennialmedia.com/) - including the required third party binaries.
 
 - **[MoPub Android Base SDK.zip](http://bit.ly/YUdWhH)**
 
@@ -27,24 +27,13 @@ Integration instructions are available on the [wiki](https://github.com/mopub/mo
 
 Please view the [changelog](https://github.com/mopub/mopub-android-sdk/blob/master/CHANGELOG.md) for details.
 
-  - **Native Ads** public release; integration instructions and documentation available on the [GitHub wiki](https://github.com/mopub/mopub-android-sdk/wiki/Native-Ads-Integration)
-  - Changed minimum supported Android version to Froyo (Android 2.2, API level 8)
-  - Added support for Google Play Services advertising identifier
-  - Renamed the `com.mopub.mobileads.MraidBrowser` Activity to `com.mopub.common.MoPubBrowser`.
-       - **Important Note:** This change requires a modification to the `AndroidManifest`. The updated set of requisite activity permissions are as follows:
-      
-      	```      	      	
-    <activity android:name="com.mopub.common.MoPubBrowser"
-				android:configChanges="keyboardHidden|orientation"/>
-    <activity android:name="com.mopub.mobileads.MoPubActivity"
-            	android:configChanges="keyboardHidden|orientation"/>
-    <activity android:name="com.mopub.mobileads.MraidActivity"
-            	android:configChanges="keyboardHidden|orientation"/>
-	<activity android:name="com.mopub.mobileads.MraidVideoPlayerActivity"
-            	android:configChanges="keyboardHidden|orientation"/>
-		```  
-  - Upgraded the bundled `android-support-v4` library to r19.1.
-      - **Note for Maven users:** Newer versions of the `android-support-v4` artifact are unavailable on Maven central, so we have included a small script to update the version in your local artifact repository. Please navigate to the `mopub-sdk` directory, and run `scripts/mavenize_support_library`.
+  - **Improved impression tracking for Native Ads** Impression tracking for native ads is now more accurate and more efficient.
+
+  - **Streamlined Maven Build and Dependencies** MoPub's Android SDK now depends on the Android v4 Support Library shipped with the Android Build tools. The MoPub Sample App also depends on Google Play Services to use the Android Advertising ID. We recommend building against Play Services in your app as well. For integration instructions, see the [wiki](https://github.com/mopub/mopub-android-sdk/wiki/Getting-Started).
+
+  - **Updated Third-Party Network Compatibility** MoPub's provided Custom Events (included in the extras/ folder) are now compatible with the latest SDK releases from Millennial Media (5.3.0), Vungle (3.1.0), and InMobi (4.4.1), Google Play Services (5.0.77).
+
+  - Bug fixes
 
 ## Requirements
 
