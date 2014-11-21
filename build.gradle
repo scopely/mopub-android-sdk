@@ -45,7 +45,7 @@ android {
 }
 
 artifactId = 'mopub-android-sdk'
-version = '2.0.1.0'
+version = '2.3.0.0'
 group = 'com.mopub.mobileads'
 
 android.libraryVariants.all { variant ->
