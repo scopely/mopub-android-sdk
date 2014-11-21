@@ -69,26 +69,11 @@ uploadArchives {
                 authentication(userName: artifactoryDeployUser, password: artifactoryDeployPassword)
             }
 
-//            addFilter('jar') { artifact, file ->
-//                artifact.name.contains('jar')
-//            }
-//
-//            addFilter('aar') { artifact, file ->
-//                !artifact.name.contains('jar')
-//            }
-
-            //pom('jar').project {
             pom.project {
-                artifactId 'mopub-android-sdk-jar-and-aar'
-                name 'Mopub Android SDK in a Jar and in an AAR'
+                artifactId 'mopub-android-sdk'
+                name 'Mopub Android SDK'
                 packaging 'jar'
             }
-
-//            pom('aar').project {
-//                artifactId 'mopub-android-sdk'
-//                name 'Mopub Android SDK'
-//                packaging 'aar'
-//            }
         }
     }
 }
