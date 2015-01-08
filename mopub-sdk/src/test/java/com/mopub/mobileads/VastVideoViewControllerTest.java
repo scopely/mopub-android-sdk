@@ -8,7 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.MediaPlayer;
-import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,11 +17,10 @@ import android.widget.ImageView;
 import android.widget.VideoView;
 
 import com.mopub.common.MoPubBrowser;
+import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.common.util.Dips;
 import com.mopub.common.util.Drawables;
-import com.mopub.common.util.VersionCode;
 import com.mopub.mobileads.test.support.GestureUtils;
-import com.mopub.mobileads.test.support.SdkTestRunner;
 import com.mopub.mobileads.util.vast.VastCompanionAd;
 import com.mopub.mobileads.util.vast.VastVideoConfiguration;
 
@@ -34,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLocalBroadcastManager;
 import org.robolectric.shadows.ShadowVideoView;
 import org.robolectric.tester.org.apache.http.RequestMatcher;
@@ -43,7 +43,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static android.media.MediaPlayer.OnPreparedListener;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static com.mopub.common.MoPubBrowser.DESTINATION_URL_KEY;
 import static com.mopub.common.util.test.support.CommonUtils.assertHttpRequestsMade;
@@ -200,7 +199,8 @@ public class VastVideoViewControllerTest {
         initializeSubject();
         ViewGroup viewGroup = subject.getLayout();
         LayerDrawable layerDrawable = (LayerDrawable) viewGroup.getBackground();
-        assertThat(layerDrawable.getDrawable(0)).isEqualTo(Drawables.THATCHED_BACKGROUND.decodeImage(context));
+        assertThat(layerDrawable.getDrawable(0)).isEqualTo(Drawables.THATCHED_BACKGROUND.createDrawable(
+                context));
         assertThat(layerDrawable.getDrawable(1)).isEqualTo(
                 new GradientDrawable(
                         GradientDrawable.Orientation.TOP_BOTTOM,
@@ -347,7 +347,6 @@ public class VastVideoViewControllerTest {
 
         verify(baseVideoViewControllerListener, never()).onFinish();
     }
-
 
     @Test
     public void onTouch_withTouchUp_whenVideoLessThan16Seconds_andClickBeforeEnd_shouldDoNothing() throws Exception {
@@ -499,8 +498,7 @@ public class VastVideoViewControllerTest {
         stub(mediaPlayer.getDuration()).toReturn(1000);
         setMediaPlayer(mediaPlayer);
 
-        final OnPreparedListener onPreparedListener = getShadowVideoView().getOnPreparedListener();
-        onPreparedListener.onPrepared(null);
+        getShadowVideoView().getOnPreparedListener().onPrepared(null);
 
         assertThat(subject.getShowCloseButtonDelay()).isEqualTo(1000);
     }
@@ -628,12 +626,11 @@ public class VastVideoViewControllerTest {
         assertThat(subject.getIsVideoProgressShouldBeChecked()).isFalse();
     }
 
+    @Config(reportSdk = VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     @Test
     public void onError_withVideoFilePermissionErrorBelowJellyBean_shouldRetryPlayingTheVideo() throws Exception {
         File file = new File("disk_video_path");
         file.createNewFile();
-
-        Robolectric.Reflection.setFinalStaticField(Build.VERSION.class, "SDK_INT", VersionCode.ICE_CREAM_SANDWICH_MR1.getApiLevel());
 
         initializeSubject();
 
@@ -648,13 +645,12 @@ public class VastVideoViewControllerTest {
         file.delete();
     }
 
+    @Config(reportSdk = VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     @Test
     public void retryMediaPlayer_withVideoFilePermissionErrorAndBelowJellyBean_shouldReturnTrue() throws Exception {
         File file = new File("disk_video_path");
         file.createNewFile();
 
-        Robolectric.Reflection.setFinalStaticField(Build.VERSION.class, "SDK_INT", VersionCode.ICE_CREAM_SANDWICH_MR1.getApiLevel());
-
         initializeSubject();
 
         assertThat(subject.getVideoRetries()).isEqualTo(0);
@@ -664,13 +660,12 @@ public class VastVideoViewControllerTest {
         file.delete();
     }
 
+    @Config(reportSdk = VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     @Test
     public void retryMediaPlayer_shouldNotRunMoreThanOnce() throws Exception {
         File file = new File("disk_video_path");
         file.createNewFile();
 
-        Robolectric.Reflection.setFinalStaticField(Build.VERSION.class, "SDK_INT", VersionCode.ICE_CREAM_SANDWICH_MR1.getApiLevel());
-
         initializeSubject();
 
         assertThat(subject.getVideoRetries()).isEqualTo(0);
@@ -683,12 +678,11 @@ public class VastVideoViewControllerTest {
         file.delete();
     }
 
+    @Config(reportSdk = VERSION_CODES.JELLY_BEAN)
     @Test
     public void retryMediaPlayer_withAndroidVersionAboveJellyBean_shouldReturnFalse() throws Exception {
         File file = new File("disk_video_path");
         file.createNewFile();
-
-        Robolectric.Reflection.setFinalStaticField(Build.VERSION.class, "SDK_INT", VersionCode.JELLY_BEAN.getApiLevel());
 
         initializeSubject();
 
@@ -699,12 +693,11 @@ public class VastVideoViewControllerTest {
         file.delete();
     }
 
+    @Config(reportSdk = VERSION_CODES.ICE_CREAM_SANDWICH)
     @Test
     public void retryMediaPlayer_withOtherVideoError_shouldReturnFalse() throws Exception {
         File file = new File("disk_video_path");
         file.createNewFile();
-
-        Robolectric.Reflection.setFinalStaticField(Build.VERSION.class, "SDK_INT", VersionCode.ICE_CREAM_SANDWICH.getApiLevel());
 
         initializeSubject();
 
@@ -715,15 +708,13 @@ public class VastVideoViewControllerTest {
         file.delete();
     }
 
+    @Config(reportSdk = VERSION_CODES.ICE_CREAM_SANDWICH)
     @Test
     public void retryMediaPlayer_withExceptionThrown_shouldReturnFalseAndIncrementRetryCount() throws Exception {
         File file = new File("disk_video_path");
         if (file.exists()){
             assertThat(file.delete()).isTrue();
         }
-
-        // No file will cause FileInputStream to throw
-        Robolectric.Reflection.setFinalStaticField(Build.VERSION.class, "SDK_INT", VersionCode.ICE_CREAM_SANDWICH.getApiLevel());
 
         initializeSubject();
 
@@ -1028,12 +1019,11 @@ public class VastVideoViewControllerTest {
         assertThat(getShadowVideoView().getPrevVideoState()).isNotEqualTo(ShadowVideoView.START);
     }
 
+    @Config(reportSdk = VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     @Test
     public void onResume_shouldResetVideoRetryCountToZero() throws Exception {
         File file = new File("disk_video_path");
         file.createNewFile();
-
-        Robolectric.Reflection.setFinalStaticField(Build.VERSION.class, "SDK_INT", VersionCode.ICE_CREAM_SANDWICH_MR1.getApiLevel());
 
         initializeSubject();
 

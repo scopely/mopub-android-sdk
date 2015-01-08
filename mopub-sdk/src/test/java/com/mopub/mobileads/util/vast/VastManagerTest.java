@@ -6,7 +6,7 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import com.mopub.common.CacheService;
-import com.mopub.mobileads.test.support.SdkTestRunner;
+import com.mopub.common.test.support.SdkTestRunner;
 
 import org.junit.After;
 import org.junit.Before;
@@ -60,12 +60,6 @@ public class VastManagerTest {
                 return null;
             }
         }).when(vastManagerListener).onVastVideoConfigurationPrepared(any(VastVideoConfiguration.class));
-    }
-
-    @After
-    public void tearDown() {
-        Robolectric.getFakeHttpLayer().clearPendingHttpResponses();
-        CacheService.clearAndNullCaches();
     }
 
     private void prepareVastVideoConfiguration() {
@@ -220,7 +214,6 @@ public class VastManagerTest {
 
     @Test
     public void prepareVastVideoConfiguration_withUninitializedDiskCache_shouldReturnNull() throws Exception {
-        CacheService.clearAndNullCaches();
         mFakeHttpLayer.addPendingHttpResponse(200, TEST_NESTED_VAST_XML_STRING);
 
         prepareVastVideoConfiguration();

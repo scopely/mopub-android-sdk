@@ -1,11 +1,12 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import com.mopub.common.DownloadResponse;
 import com.mopub.common.HttpResponses;
 import com.mopub.common.util.Json;
-import com.mopub.common.util.MoPubLog;
+import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.ResponseHeader;
 import com.mopub.nativeads.factories.CustomEventNativeFactory;
 
@@ -17,10 +18,10 @@ final class CustomEventNativeAdapter {
 
     static final String RESPONSE_BODY_KEY = "response_body_key";
 
-    public static void loadNativeAd(final Context context,
-            final Map<String, Object> localExtras,
-            final DownloadResponse downloadResponse,
-            final CustomEventNative.CustomEventNativeListener customEventNativeListener) {
+    public static void loadNativeAd(@NonNull final Context context,
+            @NonNull final Map<String, Object> localExtras,
+            @NonNull final DownloadResponse downloadResponse,
+            @NonNull final CustomEventNative.CustomEventNativeListener customEventNativeListener) {
 
         final String customEventNativeData = downloadResponse.getFirstHeader(ResponseHeader.CUSTOM_EVENT_DATA);
         final String customEventNativeClassName = downloadResponse.getFirstHeader(ResponseHeader.CUSTOM_EVENT_NAME);

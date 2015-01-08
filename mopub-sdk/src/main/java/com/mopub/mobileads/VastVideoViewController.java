@@ -1,35 +1,3 @@
-/*
- * Copyright (c) 2010-2013, MoPub Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *  Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- *
- *  Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of 'MoPub Inc.' nor the names of its contributors
- *   may be used to endorse or promote products derived from this software
- *   without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package com.mopub.mobileads;
 
 import android.app.Activity;
@@ -54,10 +22,11 @@ import com.mopub.common.DownloadResponse;
 import com.mopub.common.DownloadTask;
 import com.mopub.common.HttpResponses;
 import com.mopub.common.MoPubBrowser;
+import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.event.MoPubEvents;
 import com.mopub.common.util.AsyncTasks;
 import com.mopub.common.util.Dips;
 import com.mopub.common.util.Drawables;
-import com.mopub.common.util.MoPubLog;
 import com.mopub.common.util.Streams;
 import com.mopub.common.util.VersionCode;
 import com.mopub.mobileads.util.vast.VastCompanionAd;
@@ -163,18 +132,22 @@ public class VastVideoViewController extends BaseVideoViewController implements 
 
         mCompanionAdImageView = createCompanionAdImageView(context);
 
-        makeTrackingHttpRequest(mVastVideoConfiguration.getImpressionTrackers(), context);
+        makeTrackingHttpRequest(
+                mVastVideoConfiguration.getImpressionTrackers(),
+                context,
+                MoPubEvents.Type.IMPRESSION_REQUEST
+        );
 
         mVideoProgressCheckerRunnable = createVideoProgressCheckerRunnable();
     }
 
     @Override
-    VideoView getVideoView() {
+    protected VideoView getVideoView() {
         return mVideoView;
     }
 
     @Override
-    void onCreate() {
+    protected void onCreate() {
         super.onCreate();
         getBaseVideoViewControllerListener().onSetRequestedOrientation(SCREEN_ORIENTATION_LANDSCAPE);
 
@@ -184,7 +157,7 @@ public class VastVideoViewController extends BaseVideoViewController implements 
     }
 
     @Override
-    void onResume() {
+    protected void onResume() {
         // When resuming, VideoView needs to reinitialize its MediaPlayer with the video path
         // and therefore reset the count to zero, to let it retry on error
         mVideoRetries = 0;
@@ -197,21 +170,21 @@ public class VastVideoViewController extends BaseVideoViewController implements 
     }
 
     @Override
-    void onPause() {
+    protected void onPause() {
         stopProgressChecker();
         mSeekerPositionOnPause = mVideoView.getCurrentPosition();
         mVideoView.pause();
     }
 
     @Override
-    void onDestroy() {
+    protected void onDestroy() {
         stopProgressChecker();
         broadcastAction(ACTION_INTERSTITIAL_DISMISS);
     }
 
     // Enable the device's back button when the video close button has been displayed
     @Override
-    boolean backButtonEnabled() {
+    public boolean backButtonEnabled() {
         return mShowCloseButtonEventFired;
     }
 
@@ -266,6 +239,8 @@ public class VastVideoViewController extends BaseVideoViewController implements 
     }
 
     private Runnable createVideoProgressCheckerRunnable() {
+        // This Runnable must only be run from the main thread due to accessing
+        // class instance variables
         return new Runnable() {
             @Override
             public void run() {
@@ -319,7 +294,7 @@ public class VastVideoViewController extends BaseVideoViewController implements 
                 new int[] {Color.argb(0,0,0,0), Color.argb(255,0,0,0)}
         );
         Drawable[] layers = new Drawable[2];
-        layers[0] = Drawables.THATCHED_BACKGROUND.decodeImage(context);
+        layers[0] = Drawables.THATCHED_BACKGROUND.createDrawable(context);
         layers[1] = gradientDrawable;
         LayerDrawable layerList = new LayerDrawable(layers);
         getLayout().setBackgroundDrawable(layerList);
@@ -345,6 +320,7 @@ public class VastVideoViewController extends BaseVideoViewController implements 
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                // Called when media source is ready for playback
                 if (mVideoView.getDuration() < MAX_VIDEO_DURATION_FOR_CLOSE_BUTTON) {
                     mShowCloseButtonDelay = mVideoView.getDuration();
                 }
@@ -451,7 +427,7 @@ public class VastVideoViewController extends BaseVideoViewController implements 
     }
 
     private void handleClick(final List<String> clickThroughTrackers, final String clickThroughUrl) {
-        makeTrackingHttpRequest(clickThroughTrackers, getContext());
+        makeTrackingHttpRequest(clickThroughTrackers, getContext(), MoPubEvents.Type.CLICK_REQUEST);
 
         videoClicked();
 
@@ -503,12 +479,6 @@ public class VastVideoViewController extends BaseVideoViewController implements 
     @Deprecated
     int getVideoRetries() {
         return mVideoRetries;
-    }
-
-    // for testing
-    @Deprecated
-    Runnable getVideoProgressCheckerRunnable() {
-        return mVideoProgressCheckerRunnable;
     }
 
     // for testing

@@ -2,31 +2,37 @@ package com.mopub.nativeads;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.mopub.common.util.MoPubLog;
+import com.mopub.common.Preconditions;
+import com.mopub.common.Preconditions.NoThrow;
+import com.mopub.common.VisibleForTesting;
+import com.mopub.common.logging.MoPubLog;
 
 import java.lang.ref.WeakReference;
 
 import static com.mopub.nativeads.MoPubNative.MoPubNativeListener;
 
+/**
+ * @deprecated As of release 2.4, use {@link com.mopub.nativeads.MoPubAdAdapter} or
+ * {@link com.mopub.nativeads.MoPubStreamAdPlacer} instead
+ */
+@Deprecated
 public final class AdapterHelper {
-    private final WeakReference<Activity> mActivity;
-    private final Context mApplicationContext;
+    @NonNull private final WeakReference<Activity> mActivity;
+    @NonNull private final Context mApplicationContext;
     private final int mStart;
     private final int mInterval;
 
-    public AdapterHelper(final Context context, final int start, final int interval) throws IllegalArgumentException {
-        if (context == null) {
-            throw new IllegalArgumentException("Illegal argument: Context was null.");
-        } else if (!(context instanceof Activity)) {
-            throw new IllegalArgumentException("Illegal argument: Context must be instance of Activity.");
-        } else if (start < 0) {
-            throw new IllegalArgumentException("Illegal argument: negative starting position.");
-        } else if (interval < 2) {
-            throw new IllegalArgumentException("Illegal argument: interval must be at least 2.");
-        }
+    @Deprecated
+    public AdapterHelper(@NonNull final Context context, final int start, final int interval) {
+        Preconditions.checkNotNull(context, "Context cannot be null.");
+        Preconditions.checkArgument(context instanceof Activity, "Context must be an Activity.");
+        Preconditions.checkArgument(start >= 0, "start position must be non-negative");
+        Preconditions.checkArgument(interval >= 2, "interval must be at least 2");
 
         mActivity = new WeakReference<Activity>((Activity) context);
         mApplicationContext = context.getApplicationContext();
@@ -34,16 +40,23 @@ public final class AdapterHelper {
         mInterval = interval;
     }
 
-    public View getAdView(final View convertView,
-            final ViewGroup parent,
-            final NativeResponse nativeResponse,
-            final ViewBinder viewBinder,
-            final MoPubNativeListener moPubNativeListener) {
+    @Deprecated
+    @NonNull
+    public View getAdView(@Nullable final View convertView,
+            @Nullable final ViewGroup parent,
+            @NonNull final NativeResponse nativeResponse,
+            @NonNull final ViewBinder viewBinder,
+            @Nullable @SuppressWarnings("unused") final MoPubNativeListener moPubNativeListener) {
         final Activity activity = mActivity.get();
         if (activity == null) {
-            MoPubLog.d("Weak reference to Activity Context in AdapterHelper became null. " +
-                    "Returning empty view.");
+            MoPubLog.w("Weak reference to Activity Context in"
+                    + " AdapterHelper became null. Returning empty view.");
             return new View(mApplicationContext);
+        }
+
+        if (!NoThrow.checkNotNull(nativeResponse, "NativeResponse is null. Returning an empty view")
+                || !NoThrow.checkNotNull(viewBinder, "ViewBinder is null. Returning empty view")) {
+            return new View(activity);
         }
 
         return NativeAdViewHelper.getAdView(
@@ -51,21 +64,23 @@ public final class AdapterHelper {
                 parent,
                 activity,
                 nativeResponse,
-                viewBinder,
-                moPubNativeListener
+                viewBinder
         );
     }
 
     // Total number of content rows + ad rows
+    @Deprecated
     public int shiftedCount(final int originalCount) {
         return originalCount + numberOfAdsThatCouldFitWithContent(originalCount);
     }
 
     // Shifted position of content in the backing list
+    @Deprecated
     public int shiftedPosition(final int position) {
         return position - numberOfAdsSeenUpToPosition(position);
     }
 
+    @Deprecated
     public boolean isAdPosition(final int position) {
         if (position < mStart) {
             return false;
@@ -106,6 +121,7 @@ public final class AdapterHelper {
 
     // Testing
     @Deprecated
+    @VisibleForTesting
     void clearActivityContext() {
         mActivity.clear();
     }

@@ -1,35 +1,3 @@
-/*
- * Copyright (c) 2010-2013, MoPub Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *  Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- *
- *  Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of 'MoPub Inc.' nor the names of its contributors
- *   may be used to endorse or promote products derived from this software
- *   without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package com.mopub.mobileads;
 
 import android.content.Context;
@@ -38,13 +6,18 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.view.View;
 
+import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.DateAndTime;
 import com.mopub.common.util.Streams;
 import com.mopub.mobileads.util.Base64;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class AdAlertReporter {
     private static final String EMAIL_RECIPIENT = "creative-review@mopub.com";
@@ -73,7 +46,7 @@ public class AdAlertReporter {
 
         mEmailAttachments = new ArrayList<Uri>();
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.US);
         mDateString = dateFormat.format(DateAndTime.now());
 
         initEmailIntent();
@@ -95,7 +68,6 @@ public class AdAlertReporter {
         Intent chooserIntent = Intent.createChooser(mEmailIntent, "Send Email...");
         chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(chooserIntent);
-
     }
 
     private void initEmailIntent() {
@@ -204,7 +176,7 @@ public class AdAlertReporter {
             Uri fileUri = Uri.fromFile(new File(mContext.getFilesDir() + File.separator + fileName));
             mEmailAttachments.add(fileUri);
         } catch (Exception exception) {
-            Log.d("MoPub", "Unable to write text attachment to file: " + fileName);
+            MoPubLog.d("Unable to write text attachment to file: " + fileName);
         } finally {
             Streams.closeStream(fileOutputStream);
         }
@@ -224,7 +196,7 @@ public class AdAlertReporter {
             Uri fileUri = Uri.fromFile(new File(mContext.getFilesDir() + File.separator + fileName));
             mEmailAttachments.add(fileUri);
         } catch (Exception exception) {
-            Log.d("MoPub", "Unable to write text attachment to file: " + fileName);
+            MoPubLog.d("Unable to write text attachment to file: " + fileName);
         } finally {
             Streams.closeStream(fileOutputStream);
         }
@@ -232,7 +204,7 @@ public class AdAlertReporter {
 
     private String getFormattedTimeStamp(long timeStamp) {
         if (timeStamp != -1) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+            SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.US);
             return dateFormat.format(new Date(timeStamp));
         } else {
             return null;

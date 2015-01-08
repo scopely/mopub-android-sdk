@@ -1,12 +1,12 @@
 package com.mopub.nativeads;
 
-import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.mopub.common.DownloadResponse;
 import com.mopub.common.DownloadTask;
-import com.mopub.common.HttpResponses;
+import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.AsyncTasks;
-import com.mopub.common.util.MoPubLog;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -17,16 +17,20 @@ import java.util.List;
 import java.util.Map;
 
 import static com.mopub.common.DownloadTask.DownloadTaskListener;
-
 import static java.util.Map.Entry;
 
-class ImageDownloadTaskManager extends ImageTaskManager {
+class ImageDownloadTaskManager extends TaskManager<DownloadResponse> {
 
-    private final Map<HttpUriRequest, DownloadTask> mDownloadTasks;
+    @NonNull private final Map<HttpUriRequest, DownloadTask> mDownloadTasks;
+    private final int mRequestedWidth;
 
-    ImageDownloadTaskManager(final List<String> urls, final ImageTaskManagerListener imageTaskManagerListener)
+    ImageDownloadTaskManager(@NonNull final List<String> urls,
+                             @NonNull final TaskManagerListener<DownloadResponse> imageTaskManagerListener,
+                             final int requestedWidth)
             throws IllegalArgumentException {
         super(urls, imageTaskManagerListener);
+
+        mRequestedWidth = requestedWidth;
 
         final DownloadTaskListener downloadTaskListener = new ImageDownloadTaskListener();
         mDownloadTasks = new HashMap<HttpUriRequest, DownloadTask>(urls.size());
@@ -39,7 +43,7 @@ class ImageDownloadTaskManager extends ImageTaskManager {
     @Override
     void execute() {
         if (mDownloadTasks.isEmpty()) {
-            mImageTaskManagerListener.onSuccess(mImages);
+            mImageTaskManagerListener.onSuccess(mResults);
         }
 
         for (final Entry<HttpUriRequest, DownloadTask> entry : mDownloadTasks.entrySet()) {
@@ -67,25 +71,18 @@ class ImageDownloadTaskManager extends ImageTaskManager {
 
     private class ImageDownloadTaskListener implements DownloadTaskListener {
         @Override
-        public void onComplete(final String url, final DownloadResponse downloadResponse) {
+        public void onComplete(@Nullable final String url, @Nullable final DownloadResponse
+                downloadResponse) {
             if (downloadResponse == null || downloadResponse.getStatusCode() != HttpStatus.SC_OK) {
                 MoPubLog.d("Failed to download image: " + url);
                 failAllTasks();
                 return;
             }
 
-            final Bitmap bitmap = HttpResponses.asBitmap(downloadResponse);
-
-            if (bitmap == null) {
-                MoPubLog.d("Failed to decode bitmap from response for image: " + url);
-                failAllTasks();
-                return;
-            }
-
-            MoPubLog.d("Successfully downloaded image: " + url);
-            mImages.put(url, bitmap);
+            MoPubLog.d("Successfully downloaded image bye array: " + url);
+            mResults.put(url, downloadResponse);
             if (mCompletedCount.incrementAndGet() == mSize) {
-                mImageTaskManagerListener.onSuccess(mImages);
+                mImageTaskManagerListener.onSuccess(mResults);
             }
         }
     }

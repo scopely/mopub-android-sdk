@@ -1,9 +1,8 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,31 +28,10 @@ public abstract class CustomEventNative {
      * MoPub website that you want to associate with a given custom event request. This data may be
      * used to pass dynamic information, such as publisher IDs, without changes in application code.
      */
-    protected abstract void loadNativeAd(final Context context,
-            final CustomEventNativeListener customEventNativeListener,
-            final Map<String, Object> localExtras,
-            final Map<String, String> serverExtras);
-
-    /**
-     * Pre caches the given set of image urls. We recommend using this method to warm the image
-     * cache before calling {@link CustomEventNativeListener#onNativeAdLoaded}. Doing so will
-     * force images to cache before displaying the ad.
-     */
-    final void preCacheImages(final Context context,
-            final List<String> imageUrls,
-            final ImageListener imageListener) {
-        ImageService.get(context, imageUrls, new ImageService.ImageServiceListener() {
-            @Override
-            public void onSuccess(final Map<String, Bitmap> bitmaps) {
-                imageListener.onImagesCached();
-            }
-
-            @Override
-            public void onFail() {
-                imageListener.onImagesFailedToCache(NativeErrorCode.IMAGE_DOWNLOAD_FAILURE);
-            }
-        });
-    }
+    protected abstract void loadNativeAd(@NonNull final Context context,
+            @NonNull final CustomEventNativeListener customEventNativeListener,
+            @NonNull final Map<String, Object> localExtras,
+            @NonNull final Map<String, String> serverExtras);
 
     public interface ImageListener {
         /**

@@ -5,8 +5,8 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import com.mopub.common.CacheService;
+import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.AsyncTasks;
-import com.mopub.common.util.MoPubLog;
 import com.mopub.mobileads.VastVideoDownloadTask;
 
 import java.util.ArrayList;
@@ -48,10 +48,7 @@ public class VastManager implements VastXmlManagerAggregatorListener {
                 AsyncTasks.safeExecuteOnExecutor(mVastXmlManagerAggregator, vastXml);
             } catch (Exception e) {
                 MoPubLog.d("Failed to aggregate vast xml", e);
-
-                if (mVastManagerListener != null) {
-                    mVastManagerListener.onVastVideoConfigurationPrepared(null);
-                }
+                mVastManagerListener.onVastVideoConfigurationPrepared(null);
             }
         }
     }
@@ -67,9 +64,7 @@ public class VastManager implements VastXmlManagerAggregatorListener {
     public void onAggregationComplete(final List<VastXmlManager> vastXmlManagers) {
         mVastXmlManagerAggregator = null;
         if (vastXmlManagers == null) {
-            if (mVastManagerListener != null) {
-                mVastManagerListener.onVastVideoConfigurationPrepared(null);
-            }
+            mVastManagerListener.onVastVideoConfigurationPrepared(null);
             return;
         }
 
@@ -77,9 +72,7 @@ public class VastManager implements VastXmlManagerAggregatorListener {
                 createVastVideoConfigurationFromXml(vastXmlManagers);
 
         if (updateDiskMediaFileUrl(vastVideoConfiguration)) {
-            if (mVastManagerListener != null) {
-                mVastManagerListener.onVastVideoConfigurationPrepared(vastVideoConfiguration);
-            }
+            mVastManagerListener.onVastVideoConfigurationPrepared(vastVideoConfiguration);
             return;
         }
 
@@ -88,13 +81,9 @@ public class VastManager implements VastXmlManagerAggregatorListener {
                     @Override
                     public void onComplete(boolean success) {
                         if (success && updateDiskMediaFileUrl(vastVideoConfiguration)) {
-                            if (mVastManagerListener != null) {
-                                mVastManagerListener.onVastVideoConfigurationPrepared(vastVideoConfiguration);
-                            }
+                            mVastManagerListener.onVastVideoConfigurationPrepared(vastVideoConfiguration);
                         } else {
-                            if (mVastManagerListener != null) {
-                                mVastManagerListener.onVastVideoConfigurationPrepared(null);
-                            }
+                            mVastManagerListener.onVastVideoConfigurationPrepared(null);
                         }
                     }
                 }
@@ -107,10 +96,7 @@ public class VastManager implements VastXmlManagerAggregatorListener {
             );
         } catch (Exception e) {
             MoPubLog.d("Failed to download vast video", e);
-
-            if (mVastManagerListener != null) {
-                mVastManagerListener.onVastVideoConfigurationPrepared(null);
-            }
+            mVastManagerListener.onVastVideoConfigurationPrepared(null);
         }
     }
 
