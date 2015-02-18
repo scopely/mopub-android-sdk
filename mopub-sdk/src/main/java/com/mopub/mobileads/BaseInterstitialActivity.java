@@ -1,18 +1,24 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout.LayoutParams;
 
+import com.mopub.common.AdReport;
 import com.mopub.common.CloseableLayout;
 import com.mopub.common.CloseableLayout.OnCloseListener;
+import com.mopub.common.DataKeys;
 
-import static com.mopub.mobileads.AdFetcher.AD_CONFIGURATION_KEY;
+import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
 
 abstract class BaseInterstitialActivity extends Activity {
+    protected AdReport mAdReport;
+
     enum JavaScriptWebViewCallbacks {
         // The ad server appends these functions to the MRAID javascript to help with third party
         // impression tracking.
@@ -34,13 +40,17 @@ abstract class BaseInterstitialActivity extends Activity {
     }
 
     private CloseableLayout mCloseableLayout;
-    private long mBroadcastIdentifier;
+    private Long mBroadcastIdentifier;
 
     public abstract View getAdView();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent intent = getIntent();
+        mBroadcastIdentifier = getBroadcastIdentifierFromIntent(intent);
+        mAdReport = getAdReportFromIntent(intent);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -57,10 +67,7 @@ abstract class BaseInterstitialActivity extends Activity {
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         setContentView(mCloseableLayout);
 
-        final AdConfiguration adConfiguration = getAdConfiguration();
-        if (adConfiguration != null) {
-            mBroadcastIdentifier = adConfiguration.getBroadcastIdentifier();
-        }
+
     }
 
     @Override
@@ -69,7 +76,7 @@ abstract class BaseInterstitialActivity extends Activity {
         super.onDestroy();
     }
 
-    long getBroadcastIdentifier() {
+    Long getBroadcastIdentifier() {
         return mBroadcastIdentifier;
     }
 
@@ -81,13 +88,19 @@ abstract class BaseInterstitialActivity extends Activity {
         mCloseableLayout.setCloseVisible(false);
     }
 
-    protected AdConfiguration getAdConfiguration() {
-        AdConfiguration adConfiguration;
-        try {
-            adConfiguration = (AdConfiguration) getIntent().getSerializableExtra(AD_CONFIGURATION_KEY);
-        } catch (ClassCastException e) {
-            adConfiguration = null;
+    protected static Long getBroadcastIdentifierFromIntent(Intent intent) {
+        if (intent.hasExtra(BROADCAST_IDENTIFIER_KEY)) {
+            return intent.getLongExtra(BROADCAST_IDENTIFIER_KEY, -1L);
         }
-        return adConfiguration;
+        return null;
+    }
+
+    @Nullable
+    protected static AdReport getAdReportFromIntent(Intent intent) {
+        try {
+            return (AdReport) intent.getSerializableExtra(DataKeys.AD_REPORT_KEY);
+        } catch (ClassCastException e) {
+            return null;
+        }
     }
 }
