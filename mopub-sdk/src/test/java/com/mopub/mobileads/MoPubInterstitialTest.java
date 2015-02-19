@@ -1,56 +1,27 @@
-/*
- * Copyright (c) 2010-2013, MoPub Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *  Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- *
- *  Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of 'MoPub Inc.' nor the names of its contributors
- *   may be used to endorse or promote products derived from this software
- *   without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package com.mopub.mobileads;
 
 import android.app.Activity;
 
+import com.mopub.common.LocationService;
+import com.mopub.common.MoPub;
+import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.mobileads.test.support.TestAdViewControllerFactory;
 import com.mopub.mobileads.test.support.TestCustomEventInterstitialAdapterFactory;
+
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import static com.mopub.common.LocationService.*;
+import static com.mopub.common.util.ResponseHeader.CUSTOM_EVENT_DATA;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_NOT_FOUND;
 import static com.mopub.mobileads.MoPubErrorCode.CANCELLED;
 import static com.mopub.mobileads.MoPubErrorCode.INTERNAL_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
-import static com.mopub.common.util.ResponseHeader.CUSTOM_EVENT_DATA;
-import static com.mopub.common.util.ResponseHeader.CUSTOM_EVENT_HTML_DATA;
-import static com.mopub.common.util.ResponseHeader.CUSTOM_EVENT_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -58,7 +29,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
-@RunWith(com.mopub.mobileads.test.support.SdkTestRunner.class)
+@RunWith(SdkTestRunner.class)
 public class MoPubInterstitialTest {
 
     private static final String KEYWORDS_VALUE = "expected_keywords";
@@ -67,11 +38,12 @@ public class MoPubInterstitialTest {
     private static final String CLICKTHROUGH_URL_VALUE = "expected_clickthrough_url";
     private Activity activity;
     private MoPubInterstitial subject;
-    private Map<String, String> paramsMap;
+    private Map<String, String> serverExtras;
     private CustomEventInterstitialAdapter customEventInterstitialAdapter;
     private MoPubInterstitial.InterstitialAdListener interstitialAdListener;
     private MoPubInterstitial.MoPubInterstitialView interstitialView;
     private AdViewController adViewController;
+    private String customEventClassName;
 
     @Before
     public void setUp() throws Exception {
@@ -82,9 +54,9 @@ public class MoPubInterstitialTest {
 
         interstitialView = mock(MoPubInterstitial.MoPubInterstitialView.class);
 
-        paramsMap = new HashMap<String, String>();
-        paramsMap.put(CUSTOM_EVENT_NAME.getKey(), "class name");
-        paramsMap.put(CUSTOM_EVENT_DATA.getKey(), "class data");
+        customEventClassName = "class name";
+        serverExtras = new HashMap<String, String>();
+        serverExtras.put("testExtra", "class data");
 
         customEventInterstitialAdapter = TestCustomEventInterstitialAdapterFactory.getSingletonMock();
         reset(customEventInterstitialAdapter);
@@ -119,6 +91,13 @@ public class MoPubInterstitialTest {
     }
 
     @Test
+    public void setTestingTest() throws Exception {
+        subject.setInterstitialView(interstitialView);
+        subject.setTesting(true);
+        verify(interstitialView).setTesting(eq(true));
+    }
+
+    @Test
     public void getInterstitialAdListenerTest() throws Exception {
         interstitialAdListener = mock(MoPubInterstitial.InterstitialAdListener.class);
         subject.setInterstitialAdListener(interstitialAdListener);
@@ -126,39 +105,10 @@ public class MoPubInterstitialTest {
     }
 
     @Test
-    public void setLocationAwarenessTest() throws Exception {
-        subject.setInterstitialView(interstitialView);
-        subject.setLocationAwareness(LocationAwareness.NORMAL);
-        verify(interstitialView).setLocationAwareness(eq(LocationAwareness.NORMAL));
-    }
-
-    @Test
-    public void getLocationAwarenessTest() throws Exception {
-        subject.setInterstitialView(interstitialView);
-        subject.getLocationAwareness();
-        verify(interstitialView).getLocationAwareness();
-    }
-
-    @Test
-    public void setLocationPrecisionTest() throws Exception {
-        subject.setInterstitialView(interstitialView);
-        subject.setLocationPrecision(10);
-        verify(interstitialView).setLocationPrecision(eq(10));
-    }
-
-    @Test
-    public void getLocationPrecisionTest() throws Exception {
-        subject.setInterstitialView(interstitialView);
-        subject.getLocationPrecision();
-        verify(interstitialView).getLocationPrecision();
-    }
-
-
-    @Test
-    public void setTestingTest() throws Exception {
-        subject.setInterstitialView(interstitialView);
-        subject.setTesting(true);
-        verify(interstitialView).setTesting(eq(true));
+    public void setLocationAwarenss_shouldChangeGlobalSetting() {
+        assertThat(MoPub.getLocationAwareness()).isEqualTo(MoPub.LocationAwareness.NORMAL);
+        subject.setLocationAwareness(LocationService.LocationAwareness.DISABLED);
+        assertThat(MoPub.getLocationAwareness()).isEqualTo(MoPub.LocationAwareness.DISABLED);
     }
 
     @Test
@@ -183,11 +133,11 @@ public class MoPubInterstitialTest {
     @Test
     public void loadCustomEvent_shouldCreateAndLoadCustomEventInterstitialAdapter() throws Exception {
         MoPubInterstitial.MoPubInterstitialView moPubInterstitialView = subject.new MoPubInterstitialView(activity);
-        moPubInterstitialView.loadCustomEvent(paramsMap);
+        moPubInterstitialView.loadCustomEvent(customEventClassName, serverExtras);
 
         assertThat(TestCustomEventInterstitialAdapterFactory.getLatestMoPubInterstitial()).isSameAs(subject);
         assertThat(TestCustomEventInterstitialAdapterFactory.getLatestClassName()).isEqualTo("class name");
-        assertThat(TestCustomEventInterstitialAdapterFactory.getLatestClassData()).isEqualTo("class data");
+        assertThat(TestCustomEventInterstitialAdapterFactory.getLatestServerExtras().get("testExtra")).isEqualTo("class data");
     }
 
     @Test
@@ -328,6 +278,7 @@ public class MoPubInterstitialTest {
         assertShowsCustomEventInterstitial(true);
     }
 
+    @Ignore("pending")
     @Test
     public void dismissingHtmlInterstitial_shouldNotBecomeReadyToShowHtmlAd() throws Exception {
 //        EventForwardingBroadcastReceiver broadcastReceiver = new EventForwardingBroadcastReceiver(subject.mInterstitialAdListener);
@@ -355,17 +306,15 @@ public class MoPubInterstitialTest {
     }
 
     @Test
-    public void loadCustomEvent_shouldInitializeCustomEventBannerAdapter() throws Exception {
+    public void loadCustomEvent_shouldInitializeCustomEventInterstitialAdapter() throws Exception {
         MoPubInterstitial.MoPubInterstitialView moPubInterstitialView = subject.new MoPubInterstitialView(activity);
 
-        paramsMap.put(CUSTOM_EVENT_NAME.getKey(), "name");
-        paramsMap.put(CUSTOM_EVENT_DATA.getKey(), "data");
-        paramsMap.put(CUSTOM_EVENT_HTML_DATA.getKey(), "html");
-        moPubInterstitialView.loadCustomEvent(paramsMap);
+        serverExtras.put("testExtra", "data");
+        moPubInterstitialView.loadCustomEvent("name", serverExtras);
 
         assertThat(TestCustomEventInterstitialAdapterFactory.getLatestMoPubInterstitial()).isEqualTo(subject);
         assertThat(TestCustomEventInterstitialAdapterFactory.getLatestClassName()).isEqualTo("name");
-        assertThat(TestCustomEventInterstitialAdapterFactory.getLatestClassData()).isEqualTo("data");
+        assertThat(TestCustomEventInterstitialAdapterFactory.getLatestServerExtras().get("testExtra")).isEqualTo("data");
 
         verify(customEventInterstitialAdapter).setAdapterListener(eq(subject));
         verify(customEventInterstitialAdapter).loadInterstitial();
@@ -375,7 +324,7 @@ public class MoPubInterstitialTest {
     public void loadCustomEvent_whenParamsMapIsNull_shouldCallLoadFailUrl() throws Exception {
         MoPubInterstitial.MoPubInterstitialView moPubInterstitialView = subject.new MoPubInterstitialView(activity);
 
-        moPubInterstitialView.loadCustomEvent(null);
+        moPubInterstitialView.loadCustomEvent(null, null);
 
         verify(adViewController).loadFailUrl(eq(ADAPTER_NOT_FOUND));
         verify(customEventInterstitialAdapter, never()).invalidate();
@@ -393,15 +342,13 @@ public class MoPubInterstitialTest {
     private void loadCustomEvent() {
         MoPubInterstitial.MoPubInterstitialView moPubInterstitialView = subject.new MoPubInterstitialView(activity);
 
-        paramsMap.put(CUSTOM_EVENT_NAME.getKey(), "name");
-        paramsMap.put(CUSTOM_EVENT_DATA.getKey(), "data");
-        paramsMap.put(CUSTOM_EVENT_HTML_DATA.getKey(), "html");
-        moPubInterstitialView.loadCustomEvent(paramsMap);
+        serverExtras.put(CUSTOM_EVENT_DATA.getKey(), "data");
+        moPubInterstitialView.loadCustomEvent("name", serverExtras);
     }
 
     private void assertShowsCustomEventInterstitial(boolean shouldBeReady) {
         MoPubInterstitial.MoPubInterstitialView moPubInterstitialView = subject.new MoPubInterstitialView(activity);
-        moPubInterstitialView.loadCustomEvent(paramsMap);
+        moPubInterstitialView.loadCustomEvent(customEventClassName, serverExtras);
 
         assertThat(subject.isReady()).isEqualTo(shouldBeReady);
         assertThat(subject.show()).isEqualTo(shouldBeReady);

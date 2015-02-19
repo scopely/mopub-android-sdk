@@ -1,44 +1,18 @@
-/*
- * Copyright (c) 2010-2013, MoPub Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *  Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- *
- *  Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of 'MoPub Inc.' nor the names of its contributors
- *   may be used to endorse or promote products derived from this software
- *   without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import com.mopub.mobileads.test.support.SdkTestRunner;
+
+import com.mopub.common.AdFormat;
+import com.mopub.common.AdType;
+import com.mopub.common.test.support.SdkTestRunner;
+import com.mopub.common.util.ResponseHeader;
+
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.HashMap;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -50,6 +24,7 @@ public class AdTypeTranslatorTest {
     private MoPubView moPubView;
     private MoPubInterstitial.MoPubInterstitialView moPubInterstitialView;
     private Context context;
+    HashMap<String, String> headers;
 
     @Before
     public void setUp() throws Exception {
@@ -59,75 +34,99 @@ public class AdTypeTranslatorTest {
         context = new Activity();
         stub(moPubView.getContext()).toReturn(context);
         stub(moPubInterstitialView.getContext()).toReturn(context);
+
+        headers = new HashMap<String, String>();
     }
 
     @Test
-    public void getAdMobBannerReturnsGooglePlayServicesBanner() throws Exception {
-        customEventName = AdTypeTranslator.getCustomEventNameForAdType(moPubView, "admob_native", null);
+    public void getCustomEventName_shouldBeGoogleBanner() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, "admob_native", null, headers);
 
         assertThat(customEventName).isEqualTo("com.mopub.mobileads.GooglePlayServicesBanner");
     }
 
     @Test
-    public void getAdMobInterstitialReturnsGooglePlayServicesInterstitial() throws Exception {
-        customEventName = AdTypeTranslator.getCustomEventNameForAdType(moPubInterstitialView, "interstitial", "admob_full");
+    public void getCustomEventName_shouldBeGoogleInterstitial() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, "interstitial", "admob_full", headers);
 
         assertThat(customEventName).isEqualTo("com.mopub.mobileads.GooglePlayServicesInterstitial");
     }
 
     @Test
-    public void getMillennialBanner() throws Exception {
-        customEventName = AdTypeTranslator.getCustomEventNameForAdType(moPubView, "millennial_native", null);
+    public void getCustomEventName_shouldBeMillenialBanner() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, "millennial_native", null, headers);
 
         assertThat(customEventName).isEqualTo("com.mopub.mobileads.MillennialBanner");
     }
 
     @Test
-    public void getMillennnialInterstitial() throws Exception {
-        customEventName = AdTypeTranslator.getCustomEventNameForAdType(moPubInterstitialView, "interstitial", "millennial_full");
+    public void getCustomEventName_shouldBeMillennialIntersitial() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.INTERSTITIAL, "interstitial", "millennial_full", headers);
 
         assertThat(customEventName).isEqualTo("com.mopub.mobileads.MillennialInterstitial");
     }
 
     @Test
-    public void getMraidBanner() throws Exception {
-        customEventName = AdTypeTranslator.getCustomEventNameForAdType(moPubView, "mraid", null);
+    public void getCustomEventName_shouldBeMraidBanner() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, AdType.MRAID, null, headers);
 
-        assertThat(customEventName).isEqualTo("com.mopub.mobileads.MraidBanner");
+        assertThat(customEventName).isEqualTo("com.mopub.mraid.MraidBanner");
     }
 
     @Test
-    public void getMraidInterstitial() throws Exception {
-        customEventName = AdTypeTranslator.getCustomEventNameForAdType(moPubInterstitialView, "mraid", null);
+    public void getCustomEventName_shouldBeMraidInterstitial() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.INTERSTITIAL, AdType.MRAID, null, headers);
 
-        assertThat(customEventName).isEqualTo("com.mopub.mobileads.MraidInterstitial");
+        assertThat(customEventName).isEqualTo("com.mopub.mraid.MraidInterstitial");
     }
 
     @Test
-    public void getHtmlBanner() throws Exception {
-        customEventName = AdTypeTranslator.getCustomEventNameForAdType(moPubView, "html", null);
+    public void getCustomEventName_shouldBeHtmlBanner() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, "html", null, headers);
 
         assertThat(customEventName).isEqualTo("com.mopub.mobileads.HtmlBanner");
     }
 
     @Test
-    public void getHtmlInterstitial() throws Exception {
-        customEventName = AdTypeTranslator.getCustomEventNameForAdType(moPubInterstitialView, "html", null);
+    public void getCustomEventName_shouldBeHtmlInterstitial() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.INTERSTITIAL, "html", null, headers);
 
         assertThat(customEventName).isEqualTo("com.mopub.mobileads.HtmlInterstitial");
     }
 
     @Test
-    public void getVastInterstitial() throws Exception {
-        customEventName = AdTypeTranslator.getCustomEventNameForAdType(moPubInterstitialView, "interstitial", "vast");
+    public void getCustomEventName_shouldBeVastInterstitial() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.INTERSTITIAL, "interstitial", "vast", headers);
 
         assertThat(customEventName).isEqualTo("com.mopub.mobileads.VastVideoInterstitial");
     }
 
     @Test
-    public void getCustomEventNameForAdType_whenSendingNonsense_shouldReturnNull() throws Exception {
-        customEventName = AdTypeTranslator.getCustomEventNameForAdType(null, null, null);
+    public void getCustomEventName_shouldBeCustomClassName() {
+        headers.put(ResponseHeader.CUSTOM_EVENT_NAME.getKey(), "com.example.CustomClass");
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, AdType.CUSTOM, null, headers);
 
+        assertThat(customEventName).isEqualTo("com.example.CustomClass");
+    }
+
+    @Test
+    public void getCustomEventName_whenNameNotInHeaders_shouldBeNull() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, AdType.CUSTOM, null, headers);
+
+        assertThat(customEventName).isNull();
+    }
+
+    @Test
+    public void getCustomEventName_withNativeFormat_shouldBeMoPubNative() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.NATIVE, AdType.NATIVE, null, headers);
+
+        assertThat(customEventName).isEqualTo("com.mopub.nativeads.MoPubCustomEventNative");
+    }
+
+    @Test
+    public void getCustomEventName_whenInvalidAdTypeAndInvalidFullAdType_shouldReturnNull() {
+        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, "garbage", "garbage",
+                headers);
         assertThat(customEventName).isNull();
     }
 }

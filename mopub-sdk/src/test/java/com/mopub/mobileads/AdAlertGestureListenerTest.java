@@ -1,45 +1,17 @@
-/*
- * Copyright (c) 2010-2013, MoPub Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *  Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- *
- *  Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of 'MoPub Inc.' nor the names of its contributors
- *   may be used to endorse or promote products derived from this software
- *   without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package com.mopub.mobileads;
 
 import android.content.Context;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.mopub.common.AdReport;
+import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.mobileads.test.support.GestureUtils;
-import com.mopub.mobileads.test.support.SdkTestRunner;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 
 import static com.mopub.mobileads.AdAlertGestureListener.ZigZagState.FAILED;
 import static com.mopub.mobileads.AdAlertGestureListener.ZigZagState.FINISHED;
@@ -47,13 +19,14 @@ import static com.mopub.mobileads.AdAlertGestureListener.ZigZagState.GOING_LEFT;
 import static com.mopub.mobileads.AdAlertGestureListener.ZigZagState.GOING_RIGHT;
 import static com.mopub.mobileads.AdAlertGestureListener.ZigZagState.UNSET;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.stub;
 
 @RunWith(SdkTestRunner.class)
 public class AdAlertGestureListenerTest {
-
-    private View view;
+    @Mock
+    private View mockView;
+    @Mock
+    private AdReport mockAdReport;
     private AdAlertGestureListener subject;
     private float threshold;
     private static final float INITIAL_X = 20;
@@ -61,17 +34,14 @@ public class AdAlertGestureListenerTest {
     private float savedX;
     private float savedY;
     private MotionEvent actionDown;
-    private AdConfiguration adConfiguration;
-    private Context context;
+    @Mock
+    private Context mockContext;
 
     @Before
     public void setup() {
-        view = mock(View.class);
-        adConfiguration = mock(AdConfiguration.class);
-        context = mock(Context.class);
-        stub(view.getContext()).toReturn(context);
+        stub(mockView.getContext()).toReturn(mockContext);
 
-        subject = new AdAlertGestureListener(view, adConfiguration);
+        subject = new AdAlertGestureListener(mockView, mockAdReport);
 
         savedX = INITIAL_X;
         savedY = INITIAL_Y;
@@ -82,22 +52,22 @@ public class AdAlertGestureListenerTest {
 
     @Test
     public void constructor_shouldSetThresholdToOneThirdOfViewsWidth() throws Exception {
-        stub(view.getWidth()).toReturn(150);
-        subject = new AdAlertGestureListener(view, adConfiguration);
+        stub(mockView.getWidth()).toReturn(150);
+        subject = new AdAlertGestureListener(mockView, mockAdReport);
         assertThat(subject.getMinimumDipsInZigZag()).isEqualTo(50);
     }
 
     @Test
     public void constructor_whenViewWidthIsWiderThanThreeTimesMaxThreshold_shouldSetThresholdTo100() throws Exception {
-        stub(view.getWidth()).toReturn(500);
-        subject = new AdAlertGestureListener(view, adConfiguration);
+        stub(mockView.getWidth()).toReturn(500);
+        subject = new AdAlertGestureListener(mockView, mockAdReport);
         assertThat(subject.getMinimumDipsInZigZag()).isEqualTo(100);
     }
 
     @Test
     public void constructor_whenViewWidthIs0_shouldSetThresholdTo100() throws Exception {
-        stub(view.getWidth()).toReturn(0);
-        subject = new AdAlertGestureListener(view, adConfiguration);
+        stub(mockView.getWidth()).toReturn(0);
+        subject = new AdAlertGestureListener(mockView, mockAdReport);
         assertThat(subject.getMinimumDipsInZigZag()).isEqualTo(100);
     }
 
@@ -144,7 +114,7 @@ public class AdAlertGestureListenerTest {
         assertZigZagState(GOING_RIGHT);
         assertThat(subject.getNumberOfZigzags()).isEqualTo(0);
 
-        simulateScroll(savedX, INITIAL_Y + 52);
+        simulateScroll(savedX, INITIAL_Y + 102);
         assertZigZagState(FAILED);
     }
 
@@ -160,7 +130,7 @@ public class AdAlertGestureListenerTest {
         assertZigZagState(GOING_RIGHT);
         assertThat(subject.getNumberOfZigzags()).isEqualTo(0);
 
-        simulateScroll(savedX, INITIAL_Y - 51);
+        simulateScroll(savedX, INITIAL_Y - 101);
         assertZigZagState(FAILED);
     }
 
@@ -175,7 +145,7 @@ public class AdAlertGestureListenerTest {
         assertZigZagState(GOING_RIGHT);
         assertThat(subject.getNumberOfZigzags()).isEqualTo(3);
 
-        simulateScroll(savedX, INITIAL_Y + 51);
+        simulateScroll(savedX, INITIAL_Y + 101);
         assertZigZagState(FAILED);
     }
 
@@ -190,14 +160,14 @@ public class AdAlertGestureListenerTest {
         assertZigZagState(GOING_LEFT);
         assertThat(subject.getNumberOfZigzags()).isEqualTo(3);
 
-        simulateScroll(savedX, INITIAL_Y - 51);
+        simulateScroll(savedX, INITIAL_Y - 101);
         assertZigZagState(FAILED);
     }
 
     @Test
     public void onScroll_withStateFailed_withAnyMotion_shouldStayFailed() throws Exception {
         simulateScroll(savedX, INITIAL_Y + 49);
-        simulateScroll(savedX, INITIAL_Y + 51);
+        simulateScroll(savedX, INITIAL_Y + 101);
         assertZigZagState(FAILED);
 
         performZigZag();

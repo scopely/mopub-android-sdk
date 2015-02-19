@@ -1,11 +1,9 @@
 package com.mopub.common;
 
 import android.app.Activity;
-import android.support.v4.util.LruCache;
 
-import com.mopub.nativeads.test.support.SdkTestRunner;
+import com.mopub.common.test.support.SdkTestRunner;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,8 +36,6 @@ public class CacheServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        CacheService.clearAndNullCaches();
-
         context = new Activity();
         key1 = "http://www.mopub.com/";
         data1 = "image_data_1";
@@ -58,24 +54,16 @@ public class CacheServiceTest {
         }).when(diskCacheGetListener).onComplete(anyString(), any(byte[].class));
     }
 
-    @After
-    public void tearDown() throws Exception {
-        CacheService.clearAndNullCaches();
-    }
-
     @Test
-    public void initializeCaches_withValidContext_shouldCreateNewCachesIdempotently() throws Exception {
+    public void initializeCache_withValidContext_shouldCreateNewCachesIdempotently() throws Exception {
         assertThat(CacheService.getDiskLruCache()).isNull();
 
-        CacheService.initializeCaches(context);
+        CacheService.initialize(context);
         DiskLruCache diskLruCache = CacheService.getDiskLruCache();
         assertThat(diskLruCache).isNotNull();
-        LruCache<String, byte[]> memoryLruCache = CacheService.getMemoryLruCache();
-        assertThat(memoryLruCache).isNotNull();
 
-        CacheService.initializeCaches(context);
+        CacheService.initialize(context);
         assertThat(diskLruCache).isEqualTo(CacheService.getDiskLruCache());
-        assertThat(memoryLruCache).isEqualTo(CacheService.getMemoryLruCache());
     }
     
     @Test
@@ -87,21 +75,21 @@ public class CacheServiceTest {
 
     @Test
     public void diskLruCacheGet_whenPopulated_shouldReturnValue() throws Exception {
-        CacheService.initializeCaches(context);
+        CacheService.initialize(context);
         CacheService.putToDiskCache(key1, data1.getBytes());
         assertThat(CacheService.getFromDiskCache(key1)).isEqualTo(data1.getBytes());
     }
 
     @Test
     public void diskLruCacheGet_whenEmpty_shouldReturnNull() throws Exception {
-        CacheService.initializeCaches(context);
+        CacheService.initialize(context);
         assertCachesAreEmpty();
         assertThat(CacheService.getFromDiskCache(key1)).isNull();
     }
 
     @Test
     public void diskLruCacheAsyncGet_whenPopulated_shouldReturnValue() throws Exception {
-        CacheService.initializeCaches(context);
+        CacheService.initialize(context);
         assertCachesAreEmpty();
         CacheService.putToDiskCache(key1, data1.getBytes());
         CacheService.getFromDiskCacheAsync(key1, diskCacheGetListener);
@@ -112,7 +100,7 @@ public class CacheServiceTest {
 
     @Test
     public void diskLruCacheAsyncGet_whenEmpty_shouldReturnNull() throws Exception {
-        CacheService.initializeCaches(context);
+        CacheService.initialize(context);
         CacheService.getFromDiskCacheAsync(key1, diskCacheGetListener);
         semaphore.acquire();
         assertThat(getKey).isEqualTo(key1);
@@ -122,7 +110,7 @@ public class CacheServiceTest {
     @Test
     public void diskLruCachePut_withEmptyStringKey_shouldPutCorrectly() throws Exception {
         // this works because an empty string sha1 hashes to a valid key
-        CacheService.initializeCaches(context);
+        CacheService.initialize(context);
         CacheService.putToDiskCache("", data1.getBytes());
         assertThat(CacheService.getFromDiskCache("")).isEqualTo(data1.getBytes());
     }
@@ -130,7 +118,7 @@ public class CacheServiceTest {
     @Test
     public void diskLruCachePut_withNullKey_shouldNotPut() throws Exception {
         // null value produces empty string key which is invalid for disk lru cache
-        CacheService.initializeCaches(context);
+        CacheService.initialize(context);
         assertCachesAreEmpty();
         CacheService.putToDiskCache(null, data1.getBytes());
         assertCachesAreEmpty();
@@ -138,13 +126,13 @@ public class CacheServiceTest {
 
     @Test
     public void createValidDiskLruCacheKey_withNullValue_shouldReturnEmptyString() throws Exception {
-        CacheService.initializeCaches(context);
+        CacheService.initialize(context);
         assertThat(CacheService.createValidDiskCacheKey(null)).isEqualTo("");
     }
 
     @Test
     public void diskLruCacheAsyncPut_whenEmpty_shouldReturnNull() throws Exception {
-        CacheService.initializeCaches(context);
+        CacheService.initialize(context);
         CacheService.putToDiskCacheAsync(key1, data1.getBytes());
         Thread.sleep(500);
         assertThat(CacheService.getFromDiskCache(key1)).isEqualTo(data1.getBytes());
@@ -164,8 +152,6 @@ public class CacheServiceTest {
     }
 
     public static void assertCachesAreEmpty() {
-        assertThat(CacheService.getMemoryLruCache()).isNotNull();
-        assertThat(CacheService.getMemoryLruCache().size()).isEqualTo(0);
         assertDiskCacheIsEmpty();
     }
 }

@@ -1,45 +1,12 @@
-/*
-* Copyright (c) 2010-2013, MoPub Inc.
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are
-* met:
-*
-*  Redistributions of source code must retain the above copyright
-*   notice, this list of conditions and the following disclaimer.
-*
-*  Redistributions in binary form must reproduce the above copyright
-*   notice, this list of conditions and the following disclaimer in the
-*   documentation and/or other materials provided with the distribution.
-*
-*  Neither the name of 'MoPub Inc.' nor the names of its contributors
-*   may be used to endorse or promote products derived from this software
-*   without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-* TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-* PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-* CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-* EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-* PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-* PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-* LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-* NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
 package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 
-import com.mopub.common.CacheService;
 import com.mopub.common.CacheServiceTest;
-import com.mopub.mobileads.test.support.SdkTestRunner;
+import com.mopub.common.DataKeys;
+import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.mobileads.test.support.TestHttpResponseWithHeaders;
 import com.mopub.mobileads.test.support.TestVastManagerFactory;
 import com.mopub.mobileads.test.support.TestVastVideoDownloadTaskFactory;
@@ -58,8 +25,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.mopub.mobileads.AdFetcher.AD_CONFIGURATION_KEY;
-import static com.mopub.mobileads.AdFetcher.HTML_RESPONSE_BODY_KEY;
+import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
+import static com.mopub.common.DataKeys.HTML_RESPONSE_BODY_KEY;
 import static com.mopub.mobileads.CustomEventInterstitial.CustomEventInterstitialListener;
 import static com.mopub.mobileads.EventForwardingBroadcastReceiver.ACTION_INTERSTITIAL_DISMISS;
 import static com.mopub.mobileads.EventForwardingBroadcastReceiver.ACTION_INTERSTITIAL_SHOW;
@@ -73,7 +40,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.stub;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
 
@@ -89,7 +55,6 @@ public class VastVideoInterstitialTest extends ResponseBodyInterstitialTest {
     private String videoUrl;
     private VastVideoDownloadTask vastVideoDownloadTask;
     private long broadcastIdentifier;
-    private AdConfiguration adConfiguration;
 
     @Before
     public void setUp() throws Exception {
@@ -104,20 +69,17 @@ public class VastVideoInterstitialTest extends ResponseBodyInterstitialTest {
         customEventInterstitialListener = mock(CustomEventInterstitialListener.class);
         localExtras = new HashMap<String, Object>();
         serverExtras = new HashMap<String, String>();
-        serverExtras.put(AdFetcher.HTML_RESPONSE_BODY_KEY, Uri.encode(expectedResponse));
+        serverExtras.put(DataKeys.HTML_RESPONSE_BODY_KEY, expectedResponse);
 
         response = new TestHttpResponseWithHeaders(200, expectedResponse);
 
         broadcastIdentifier = 2222;
-        adConfiguration = mock(AdConfiguration.class, withSettings().serializable());
-        stub(adConfiguration.getBroadcastIdentifier()).toReturn(broadcastIdentifier);
-        localExtras.put(AD_CONFIGURATION_KEY, adConfiguration);
+        localExtras.put(BROADCAST_IDENTIFIER_KEY, broadcastIdentifier);
     }
 
     @After
     public void tearDown() throws Exception {
         reset(vastVideoDownloadTask);
-        CacheService.clearAndNullCaches();
     }
 
     @Test
@@ -197,10 +159,10 @@ public class VastVideoInterstitialTest extends ResponseBodyInterstitialTest {
         ((VastVideoInterstitial) subject).onVastVideoConfigurationPrepared(vastVideoConfiguration);
 
         subject.showInterstitial();
-        BaseVideoPlayerActivitiyTest.assertVastVideoPlayerActivityStarted(
+        BaseVideoPlayerActivityTest.assertVastVideoPlayerActivityStarted(
                 MraidVideoPlayerActivity.class,
                 vastVideoConfiguration,
-                adConfiguration
+                broadcastIdentifier
                 );
     }
 

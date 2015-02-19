@@ -1,35 +1,3 @@
-/*
- * Copyright (c) 2010-2013, MoPub Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *  Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- *
- *  Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of 'MoPub Inc.' nor the names of its contributors
- *   may be used to endorse or promote products derived from this software
- *   without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package com.mopub.mobileads;
 
 import android.app.Activity;
@@ -38,24 +6,26 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.webkit.WebViewDatabase;
 import android.widget.FrameLayout;
-
+import com.mopub.common.AdFormat;
+import com.mopub.common.MoPub;
+import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.ManifestUtils;
+import com.mopub.common.util.Visibility;
 import com.mopub.mobileads.factories.AdViewControllerFactory;
 import com.mopub.mobileads.factories.CustomEventBannerAdapterFactory;
 
 import java.util.*;
 
-import static com.mopub.common.LocationService.*;
+import static com.mopub.common.LocationService.LocationAwareness;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_NOT_FOUND;
-import static com.mopub.common.util.ResponseHeader.CUSTOM_EVENT_DATA;
-import static com.mopub.common.util.ResponseHeader.CUSTOM_EVENT_NAME;
 
 public class MoPubView extends FrameLayout {
-
     public interface BannerAdListener {
         public void onBannerLoaded(MoPubView banner);
         public void onBannerFailed(MoPubView banner, MoPubErrorCode errorCode);
@@ -64,18 +34,14 @@ public class MoPubView extends FrameLayout {
         public void onBannerCollapsed(MoPubView banner);
     }
 
-    public static final String HOST = "ads.mopub.com";
-    public static final String HOST_FOR_TESTING = "testing.ads.mopub.com";
-    public static final String AD_HANDLER = "/m/ad";
     public static final int DEFAULT_LOCATION_PRECISION = 6;
-
+    @Nullable
     protected AdViewController mAdViewController;
     protected CustomEventBannerAdapter mCustomEventBannerAdapter;
 
     private Context mContext;
+    private int mScreenVisibility;
     private BroadcastReceiver mScreenStateReceiver;
-    private boolean mIsInForeground;
-    private LocationAwareness mLocationAwareness;
 
     private BannerAdListener mBannerAdListener;
     
@@ -96,8 +62,7 @@ public class MoPubView extends FrameLayout {
         ManifestUtils.checkWebViewActivitiesDeclared(context);
 
         mContext = context;
-        mIsInForeground = (getVisibility() == VISIBLE);
-        mLocationAwareness = LocationAwareness.NORMAL;
+        mScreenVisibility = getVisibility();
 
         setHorizontalScrollBarEnabled(false);
         setVerticalScrollBarEnabled(false);
@@ -108,7 +73,7 @@ public class MoPubView extends FrameLayout {
         // Here, we'll work around it by trying to create a file store and then just go inert
         // if it's not accessible.
         if (WebViewDatabase.getInstance(context) == null) {
-            Log.e("MoPub", "Disabling MoPub. Local cache file is inaccessible so MoPub will " +
+            MoPubLog.e("Disabling MoPub. Local cache file is inaccessible so MoPub will " +
                     "fail if we try to create a WebView. Details of this Android bug found at:" +
                     "http://code.google.com/p/android/issues/detail?id=10789");
             return;
@@ -121,16 +86,16 @@ public class MoPubView extends FrameLayout {
     private void registerScreenStateBroadcastReceiver() {
         mScreenStateReceiver = new BroadcastReceiver() {
             public void onReceive(final Context context, final Intent intent) {
-                if (!mIsInForeground || intent == null) {
+                if (!Visibility.isScreenVisible(mScreenVisibility) || intent == null) {
                     return;
                 }
 
                 final String action = intent.getAction();
 
                 if (Intent.ACTION_USER_PRESENT.equals(action)) {
-                    setAdVisibility(true);
+                    setAdVisibility(View.VISIBLE);
                 } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
-                    setAdVisibility(false);
+                    setAdVisibility(View.GONE);
                 }
             }
         };
@@ -144,12 +109,14 @@ public class MoPubView extends FrameLayout {
         try {
             mContext.unregisterReceiver(mScreenStateReceiver);
         } catch (Exception IllegalArgumentException) {
-            Log.d("MoPub", "Failed to unregister screen state broadcast receiver (never registered).");
+            MoPubLog.d("Failed to unregister screen state broadcast receiver (never registered).");
         }
     }
 
     public void loadAd() {
-        if (mAdViewController != null) mAdViewController.loadAd();
+        if (mAdViewController != null) {
+            mAdViewController.loadAd();
+        }
     }
 
     /*
@@ -179,9 +146,12 @@ public class MoPubView extends FrameLayout {
         if (mAdViewController != null) mAdViewController.loadFailUrl(errorCode);
     }
 
-    protected void loadCustomEvent(Map<String, String> paramsMap) {
-        if (paramsMap == null) {
-            Log.d("MoPub", "Couldn't invoke custom event because the server did not specify one.");
+    protected void loadCustomEvent(String customEventClassName, Map<String, String> serverExtras) {
+        if (mAdViewController == null) {
+            return;
+        }
+        if (TextUtils.isEmpty(customEventClassName)) {
+            MoPubLog.d("Couldn't invoke custom event because the server did not specify one.");
             loadFailUrl(ADAPTER_NOT_FOUND);
             return;
         }
@@ -190,12 +160,14 @@ public class MoPubView extends FrameLayout {
             mCustomEventBannerAdapter.invalidate();
         }
 
-        Log.d("MoPub", "Loading custom event adapter.");
+        MoPubLog.d("Loading custom event adapter.");
 
         mCustomEventBannerAdapter = CustomEventBannerAdapterFactory.create(
                 this,
-                paramsMap.get(CUSTOM_EVENT_NAME.getKey()),
-                paramsMap.get(CUSTOM_EVENT_DATA.getKey()));
+                customEventClassName,
+                serverExtras,
+                mAdViewController.getBroadcastIdentifier(),
+                mAdViewController.getAdReport());
         mCustomEventBannerAdapter.loadAd();
     }
 
@@ -209,24 +181,25 @@ public class MoPubView extends FrameLayout {
     }
 
     protected void trackNativeImpression() {
-        Log.d("MoPub", "Tracking impression for native adapter.");
+        MoPubLog.d("Tracking impression for native adapter.");
         if (mAdViewController != null) mAdViewController.trackImpression();
     }
 
     @Override
-    protected void onWindowVisibilityChanged(int visibility) {
-        final boolean isVisible = (visibility == VISIBLE);
-
-        mIsInForeground = isVisible;
-        setAdVisibility(isVisible);
+    protected void onWindowVisibilityChanged(final int visibility) {
+        // Ignore transitions between View.GONE and View.INVISIBLE
+        if (Visibility.hasScreenVisibilityChanged(mScreenVisibility, visibility)) {
+            mScreenVisibility = visibility;
+            setAdVisibility(mScreenVisibility);
+        }
     }
 
-    private void setAdVisibility(boolean isVisible) {
+    private void setAdVisibility(final int visibility) {
         if (mAdViewController == null) {
             return;
         }
 
-        if (isVisible) {
+        if (Visibility.isScreenVisible(visibility)) {
             mAdViewController.unpauseRefresh();
         } else {
             mAdViewController.pauseRefresh();
@@ -234,7 +207,7 @@ public class MoPubView extends FrameLayout {
     }
 
     protected void adLoaded() {
-        Log.d("MoPub", "adLoaded");
+        MoPubLog.d("adLoaded");
         
         if (mBannerAdListener != null) {
             mBannerAdListener.onBannerLoaded(this);
@@ -298,14 +271,6 @@ public class MoPubView extends FrameLayout {
         return (mAdViewController != null) ? mAdViewController.getKeywords() : null;
     }
 
-    public void setFacebookSupported(boolean enabled) {
-        if (mAdViewController != null) mAdViewController.setFacebookSupported(enabled);
-    }
-
-    public boolean isFacebookSupported() {
-        return (mAdViewController != null) ? mAdViewController.isFacebookSupported() : false;
-    }
-
     public void setLocation(Location location) {
         if (mAdViewController != null) mAdViewController.setLocation(location);
     }
@@ -330,12 +295,18 @@ public class MoPubView extends FrameLayout {
         return (mAdViewController != null) ? mAdViewController.getResponseString() : null;
     }
 
+    @Deprecated
     public void setClickthroughUrl(String url) {
-        if (mAdViewController != null) mAdViewController.setClickthroughUrl(url);
+        // Does nothing.
     }
 
+    public String getClickTrackingUrl() {
+        return (mAdViewController != null) ? mAdViewController.getClickTrackingUrl() : null;
+    }
+
+    @Deprecated
     public String getClickthroughUrl() {
-        return (mAdViewController != null) ? mAdViewController.getClickthroughUrl() : null;
+        return getClickTrackingUrl();
     }
 
     public Activity getActivity() {
@@ -350,31 +321,15 @@ public class MoPubView extends FrameLayout {
         return mBannerAdListener;
     }
 
-    public void setLocationAwareness(LocationAwareness awareness) {
-        mLocationAwareness = awareness;
-    }
-
-    public LocationAwareness getLocationAwareness() {
-        return mLocationAwareness;
-    }
-
-    public void setLocationPrecision(int precision) {
-        if (mAdViewController != null) {
-            mAdViewController.setLocationPrecision(precision);
-        }
-    }
-
-    public int getLocationPrecision() {
-        return (mAdViewController != null) ? mAdViewController.getLocationPrecision() : 0;
-    }
-
     public void setLocalExtras(Map<String, Object> localExtras) {
         if (mAdViewController != null) mAdViewController.setLocalExtras(localExtras);
     }
 
     public Map<String, Object> getLocalExtras() {
-        if (mAdViewController != null) return mAdViewController.getLocalExtras();
-        return Collections.emptyMap();
+        if (mAdViewController != null) {
+            return mAdViewController.getLocalExtras();
+        }
+        return new TreeMap<String, Object>();
     }
 
     public void setAutorefreshEnabled(boolean enabled) {
@@ -386,7 +341,7 @@ public class MoPubView extends FrameLayout {
     public boolean getAutorefreshEnabled() {
         if (mAdViewController != null) return mAdViewController.getAutorefreshEnabled();
         else {
-            Log.d("MoPub", "Can't get autorefresh status for destroyed MoPubView. " +
+            MoPubLog.d("Can't get autorefresh status for destroyed MoPubView. " +
                     "Returning false.");
             return false;
         }
@@ -403,7 +358,7 @@ public class MoPubView extends FrameLayout {
     public boolean getTesting() {
         if (mAdViewController != null) return mAdViewController.getTesting();
         else {
-            Log.d("MoPub", "Can't get testing status for destroyed MoPubView. " +
+            MoPubLog.d("Can't get testing status for destroyed MoPubView. " +
                     "Returning false.");
             return false;
         }
@@ -420,6 +375,30 @@ public class MoPubView extends FrameLayout {
 
     AdViewController getAdViewController() {
         return mAdViewController;
+    }
+
+    public AdFormat getAdFormat() {
+        return AdFormat.BANNER;
+    }
+
+    @Deprecated
+    public void setLocationAwareness(LocationAwareness locationAwareness) {
+        MoPub.setLocationAwareness(locationAwareness.getNewLocationAwareness());
+    }
+
+    @Deprecated
+    public LocationAwareness getLocationAwareness() {
+        return LocationAwareness.fromMoPubLocationAwareness(MoPub.getLocationAwareness());
+    }
+
+    @Deprecated
+    public void setLocationPrecision(int precision) {
+        MoPub.setLocationPrecision(precision);
+    }
+
+    @Deprecated
+    public int getLocationPrecision() {
+        return MoPub.getLocationPrecision();
     }
 
     @Deprecated
@@ -484,7 +463,7 @@ public class MoPubView extends FrameLayout {
 
     @Deprecated
     protected void adWillLoad(String url) {
-        Log.d("MoPub", "adWillLoad: " + url);
+        MoPubLog.d("adWillLoad: " + url);
         if (mOnAdWillLoadListener != null) mOnAdWillLoadListener.OnAdWillLoad(this, url);
     }
 
@@ -501,5 +480,19 @@ public class MoPubView extends FrameLayout {
     @Deprecated
     public void customEventActionWillBegin() {
         if (mAdViewController != null) mAdViewController.customEventActionWillBegin();
+    }
+
+    /**
+     * @deprecated As of release 2.4
+     */
+    @Deprecated
+    public void setFacebookSupported(boolean enabled) {}
+
+    /**
+     * @deprecated As of release 2.4
+     */
+    @Deprecated
+    public boolean isFacebookSupported() {
+        return false;
     }
 }
