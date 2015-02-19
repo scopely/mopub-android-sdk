@@ -1,11 +1,13 @@
 package com.mopub.mobileads;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.mopub.common.AdReport;
 import com.mopub.common.Constants;
 import com.mopub.common.logging.MoPubLog;
 
@@ -18,7 +20,8 @@ public class BaseHtmlWebView extends BaseWebView implements UserClickListener {
     private final ViewGestureDetector mViewGestureDetector;
     private boolean mClicked;
 
-    public BaseHtmlWebView(Context context, AdConfiguration adConfiguration) {
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public BaseHtmlWebView(Context context, AdReport adReport) {
         super(context);
 
         //RHT: This is to disable hardware acceleration, which is believed to be the cause of signal 11 SIGSEGV.
@@ -29,7 +32,7 @@ public class BaseHtmlWebView extends BaseWebView implements UserClickListener {
         disableScrollingAndZoom();
         getSettings().setJavaScriptEnabled(true);
 
-        mViewGestureDetector = new ViewGestureDetector(context, this, adConfiguration);
+        mViewGestureDetector = new ViewGestureDetector(context, this, adReport);
         mViewGestureDetector.setUserClickListener(this);
 
         if (currentApiLevel().isAtLeast(ICE_CREAM_SANDWICH)) {
