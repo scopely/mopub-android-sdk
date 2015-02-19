@@ -1,5 +1,6 @@
 package com.mopub.mobileads;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
@@ -19,6 +20,7 @@ public class BaseHtmlWebView extends BaseWebView implements UserClickListener {
     private final ViewGestureDetector mViewGestureDetector;
     private boolean mClicked;
 
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public BaseHtmlWebView(Context context, AdReport adReport) {
         super(context);
 
