@@ -7,7 +7,7 @@ repositories {
 apply plugin: 'com.android.library'
 apply plugin: 'maven'
 
-group = 'com.mopub'
+group = 'com.mopub.mobileads'
 
 description = '''MoPub SDK'''
 
@@ -58,6 +58,8 @@ dependencies {
 check.dependsOn.remove("test")
 check.dependsOn.remove("testDebug")
 
+// Upload Settings/Task
+version = '3.4.0.0'
 uploadArchives {
     repositories {
         // the maven plugin features this deployer
