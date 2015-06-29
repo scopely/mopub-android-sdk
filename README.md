@@ -4,7 +4,14 @@ Thanks for taking a look at MoPub! We take pride in having an easy-to-use, flexi
 
 Sign up for an account at [http://app.mopub.com/](http://app.mopub.com/).
 
-Help is available on the [wiki](https://github.com/mopub/mopub-android-sdk/wiki/Getting-Started).
+## Need Help?
+
+You can find integration documentation on our [wiki](https://github.com/mopub/mopub-android-sdk/wiki/Getting-Started) and
+additional help documentation on our [developer help site](http://dev.twitter.com/mopub). 
+
+To file an issue with our team visit the [MoPub Forum](https://twittercommunity.com/c/fabric/mopub). 
+
+**Note: We will be deprecating the use of GitHub issues in the near future and migrating all issues to the forum to provide a faster response time.**
 
 ## Download
 
@@ -27,20 +34,15 @@ Integration instructions are available on the [wiki](https://github.com/mopub/mo
 
 Please view the [changelog](https://github.com/mopub/mopub-android-sdk/blob/master/CHANGELOG.md) for details.
 
-  - **Volley networking stack** MoPub for Android now uses Google's Volley library for HTTP requests. You will need to add our bundled Volley JAR (available at `mopub-sdk/libs/mopub-volley-1.0.0.jar`) as a compile-time dependency. See instructions in our [integration page](https://dev.twitter.com/mopub/android/getting-started).
-  - **Updated Vungle Support** Certified the `VungleInterstitial` custom event against Vungle SDK 3.2.2
-  - **VAST Video Bug Fixes**
-    - Fixed inability to parse VAST tags referencing URLs that contain 3rd party macros
-    - VAST videos no longer fire completion trackers upon video playback error
-  - Added support for the `mopubnativebrowser://` click-destination scheme for Native, MRAID, and VAST ads (it was already supported for HTML ads). Links of this type (e.g. `mopubnativebrowser://navigate?url=http%3A%2F%2Fwww.mopub.com`) will open the specified URL in the device's default browser, rather than in MoPub's in-app browser.
+- Updated Chartboost support to 5.3.0. This introduces a new shared class called ChartboostShared. If you are using Chartboost Custom Native Networks you will need to include this class in your build along with ChartboostInterstitial.
 
 ## Requirements
 
 - Android 2.3.1 (API Version 9) and up
-- android-support-v4.jar
-- android-support-annotations.jar (**New in 3.3.0**)
-- Bundled Volley MoPub JAR (mopub-volley-1.0.0.jar) (**New in 3.4.0**)
-- **Recommended** Google Play Services 5.0.89 & up.
+- android-support-v4.jar, r22 (**Updated in 3.7.0**)
+- android-support-annotations.jar, r22 (**Updated in 3.7.0**)
+- MoPub Volley Library (mopub-volley-1.1.0.jar - available on JCenter) (**Updated in 3.6.0**)
+- **Recommended** Google Play Services 7.0.0
 
 ## Upgrading from 3.2.0 and Prior
 In 3.3.0 a dependency on android-support-annotations.jar was added. If you are using Maven or Gradle to include the MoPub SDK, this dependency is included in the build scripts. For instructions on adding dependencies for Eclipse projects, see our [Getting Started Guide](https://github.com/mopub/mopub-android-sdk/wiki/Getting-Started#adding-the-support-libraries-to-your-project)

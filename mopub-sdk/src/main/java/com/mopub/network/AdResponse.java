@@ -16,6 +16,10 @@ public class AdResponse implements Serializable {
 
     @Nullable
     private final String mAdType;
+
+    @Nullable
+    private final String mAdUnitId;
+
     @Nullable
     private final String mFullAdType;
     @Nullable
@@ -29,6 +33,8 @@ public class AdResponse implements Serializable {
     private final String mImpressionTrackingUrl;
     @Nullable
     private final String mFailoverUrl;
+    @Nullable
+    private final String mRequestId;
 
     @Nullable
     private final Integer mWidth;
@@ -58,12 +64,14 @@ public class AdResponse implements Serializable {
     private AdResponse(@NonNull Builder builder) {
 
         mAdType = builder.adType;
+        mAdUnitId = builder.adUnitId;
         mFullAdType = builder.fullAdType;
         mNetworkType = builder.networkType;
         mRedirectUrl = builder.redirectUrl;
         mClickTrackingUrl = builder.clickTrackingUrl;
         mImpressionTrackingUrl = builder.impressionTrackingUrl;
         mFailoverUrl = builder.failoverUrl;
+        mRequestId = builder.requestId;
         mWidth = builder.width;
         mHeight = builder.height;
         mAdTimeoutDelayMillis = builder.adTimeoutDelayMillis;
@@ -102,6 +110,11 @@ public class AdResponse implements Serializable {
     }
 
     @Nullable
+    public String getAdUnitId() {
+        return mAdUnitId;
+    }
+
+    @Nullable
     public String getNetworkType() {
         return mNetworkType;
     }
@@ -124,6 +137,11 @@ public class AdResponse implements Serializable {
     @Nullable
     public String getFailoverUrl() {
         return mFailoverUrl;
+    }
+
+    @Nullable
+    public String getRequestId() {
+        return mRequestId;
     }
 
     public boolean isScrollable() {
@@ -191,6 +209,7 @@ public class AdResponse implements Serializable {
 
     public static class Builder {
         private String adType;
+        private String adUnitId;
         private String fullAdType;
         private String networkType;
 
@@ -198,6 +217,7 @@ public class AdResponse implements Serializable {
         private String clickTrackingUrl;
         private String impressionTrackingUrl;
         private String failoverUrl;
+        private String requestId;
 
         private Integer width;
         private Integer height;
@@ -211,10 +231,15 @@ public class AdResponse implements Serializable {
         private JSONObject jsonBody;
 
         private String customEventClassName;
-        private Map<String, String> serverExtras;
+        private Map<String, String> serverExtras = new TreeMap<String, String>();
 
         public Builder setAdType(@Nullable final String adType) {
             this.adType = adType;
+            return this;
+        }
+
+        public Builder setAdUnitId(@Nullable final String adUnitId) {
+            this.adUnitId = adUnitId;
             return this;
         }
 
@@ -245,6 +270,11 @@ public class AdResponse implements Serializable {
 
         public Builder setFailoverUrl(@Nullable final String failoverUrl) {
             this.failoverUrl = failoverUrl;
+            return this;
+        }
+
+        public Builder setRequestId(@Nullable final String requestId) {
+            this.requestId = requestId;
             return this;
         }
 

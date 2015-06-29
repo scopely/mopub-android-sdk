@@ -13,18 +13,19 @@ import com.millennialmedia.android.RequestListener;
 
 import java.util.Map;
 
-import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
-
 /**
  * Compatible with version 5.3.0 of the Millennial Media SDK.
  */
 
 class MillennialBanner extends CustomEventBanner {
-    private MMAdView mMillennialAdView;
-    private CustomEventBannerListener mBannerListener;
+
     public static final String APID_KEY = "adUnitID";
     public static final String AD_WIDTH_KEY = "adWidth";
     public static final String AD_HEIGHT_KEY = "adHeight";
+
+    private MMAdView mMillennialAdView;
+    private CustomEventBannerListener mBannerListener;
+
 
     @Override
     protected void loadBanner(final Context context, final CustomEventBannerListener customEventBannerListener,
@@ -109,7 +110,7 @@ class MillennialBanner extends CustomEventBanner {
         @Override
         public void requestFailed(final MMAd mmAd, final MMException e) {
             Log.d("MoPub", "Millennial banner ad failed to load.");
-            mBannerListener.onBannerFailed(NETWORK_NO_FILL);
+            mBannerListener.onBannerFailed(MoPubErrorCode.NETWORK_NO_FILL);
         }
 
         @Override
