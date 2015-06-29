@@ -1,57 +1,149 @@
 package com.mopub.common.event;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.mopub.common.ClientMetadata;
+import com.mopub.common.Preconditions;
+import com.mopub.common.VisibleForTesting;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static com.mopub.common.ClientMetadata.MoPubNetworkType;
 
-abstract class BaseEvent {
+public abstract class BaseEvent {
+
+    public static enum ScribeCategory {
+        EXCHANGE_CLIENT_EVENT("exchange_client_event"),
+        EXCHANGE_CLIENT_ERROR("exchange_client_error");
+
+        @NonNull private final String mScribeCategory;
+        private ScribeCategory(@NonNull String scribeCategory) {
+            mScribeCategory = scribeCategory;
+        }
+
+        @NonNull
+        public String getCategory() {
+            return mScribeCategory;
+        }
+    }
+
     public static enum SdkProduct {
         NONE(0),
         WEB_VIEW(1),
         NATIVE(2);
 
-        public final int mType;
-        SdkProduct(int type) {
+        private final int mType;
+        private SdkProduct(int type) {
             mType = type;
+        }
+
+        public int getType() {
+            return mType;
         }
     }
 
     public static enum AppPlatform {
-        IOS(0),
-        ANDROID(1),
-        MOBILE_WEB(2);
+        NONE(0),
+        IOS(1),
+        ANDROID(2),
+        MOBILE_WEB(3);
 
-        public final int mType;
-        AppPlatform(int type) {
+        private final int mType;
+        private AppPlatform(int type) {
             mType = type;
+        }
+
+        public int getType() {
+            return mType;
         }
     }
 
-    private final String mEventName;
-    private final String mEventCategory;
-    private final SdkProduct mSdkProduct;
-    private final String mAdUnitId;
-    private final String mAdCreativeId;
-    private final String mAdType;
-    private final String mAdNetworkType;
-    private final Double mAdWidthPx;
-    private final Double mAdHeightPx;
-    private final Double mGeoLat;
-    private final Double mGeoLon;
-    private final Double mGeoAccuracy;
-    private final Double mPerformanceDurationMs;
-    private final String mRequestId;
-    private final Integer mRequestStatusCode;
-    private final String mRequestUri;
-    private final Integer mRequestRetries;
-    private final long mTimestampUtcMs;
+    public enum Name {
+        AD_REQUEST("ad_request"),
+        IMPRESSION_REQUEST("impression_request"),
+        CLICK_REQUEST("click_request");
 
-    BaseEvent(final Builder builder) {
-        mEventName = builder.mEventName;
-        mEventCategory = builder.mEventCategory;
+        @NonNull private final String mName;
+        private Name(@NonNull String name) {
+            mName = name;
+        }
+
+        @NonNull
+        public String getName() {
+            return mName;
+        }
+    }
+
+    public enum Category {
+        REQUESTS("requests");
+
+        @NonNull private final String mCategory;
+        private Category(@NonNull String category) {
+            mCategory = category;
+        }
+
+        @NonNull
+        public String getCategory() {
+            return mCategory;
+        }
+    }
+
+    public enum SamplingRate {
+        AD_REQUEST(0.1);
+
+        private final double mSamplingRate;
+        private SamplingRate(double samplingRate) {
+            mSamplingRate = samplingRate;
+        }
+
+        public double getSamplingRate() {
+            return mSamplingRate;
+        }
+    }
+
+    @NonNull private final ScribeCategory mScribeCategory;
+    @NonNull private final Name mName;
+    @NonNull private final Category mCategory;
+    @Nullable private final SdkProduct mSdkProduct;
+    @Nullable private final String mAdUnitId;
+    @Nullable private final String mAdCreativeId;
+    @Nullable private final String mAdType;
+    @Nullable private final String mAdNetworkType;
+    @Nullable private final Double mAdWidthPx;
+    @Nullable private final Double mAdHeightPx;
+    @Nullable private final Integer mDeviceScreenWidthDip;
+    @Nullable private final Integer mDeviceScreenHeightDip;
+    @Nullable private final Double mGeoLat;
+    @Nullable private final Double mGeoLon;
+    @Nullable private final Double mGeoAccuracy;
+    @Nullable private final MoPubNetworkType mNetworkType;
+    @Nullable private final String mNetworkOperator;
+    @Nullable private final String mNetworkOperatorName;
+    @Nullable private final String mIsoCountryCode;
+    @Nullable private final String mSimOperator;
+    @Nullable private final String mSimOperatorName;
+    @Nullable private final String mSimIsoCountryCode;
+    @Nullable private final Double mPerformanceDurationMs;
+    @Nullable private final String mRequestId;
+    @Nullable private final Integer mRequestStatusCode;
+    @Nullable private final String mRequestUri;
+    @Nullable private final Integer mRequestRetries;
+    private final long mTimestampUtcMs;
+    @Nullable private ClientMetadata mClientMetaData;
+
+     /**
+     * The percentage of events, in range 0 - 1.0, to be logged.
+     */
+    private final double mSamplingRate;
+
+    public BaseEvent(@NonNull final Builder builder) {
+        Preconditions.checkNotNull(builder);
+
+        mScribeCategory = builder.mScribeCategory;
+        mName = builder.mName;
+        mCategory = builder.mCategory;
         mSdkProduct = builder.mSdkProduct;
         mAdUnitId = builder.mAdUnitId;
         mAdCreativeId = builder.mAdCreativeId;
@@ -67,158 +159,247 @@ abstract class BaseEvent {
         mRequestStatusCode = builder.mRequestStatusCode;
         mRequestUri = builder.mRequestUri;
         mRequestRetries = builder.mRequestRetries;
+        mSamplingRate = builder.mSamplingRate;
         mTimestampUtcMs = System.currentTimeMillis();
+
+        mClientMetaData = ClientMetadata.getInstance();
+        if (mClientMetaData != null) {
+            mDeviceScreenWidthDip = mClientMetaData.getDeviceScreenWidthDip();
+            mDeviceScreenHeightDip = mClientMetaData.getDeviceScreenHeightDip();
+            mNetworkType = mClientMetaData.getActiveNetworkType();
+            mNetworkOperator = mClientMetaData.getNetworkOperator();
+            mNetworkOperatorName = mClientMetaData.getNetworkOperatorName();
+            mIsoCountryCode = mClientMetaData.getIsoCountryCode();
+            mSimOperator = mClientMetaData.getSimOperator();
+            mSimOperatorName = mClientMetaData.getSimOperatorName();
+            mSimIsoCountryCode = mClientMetaData.getSimIsoCountryCode();
+        } else {
+            // Need to silence warnings about variables not being initialized
+            mDeviceScreenWidthDip = null;
+            mDeviceScreenHeightDip = null;
+            mNetworkType = null;
+            mNetworkOperator = null;
+            mNetworkOperatorName = null;
+            mIsoCountryCode = null;
+            mSimOperator = null;
+            mSimOperatorName = null;
+            mSimIsoCountryCode = null;
+        }
     }
 
-    public String getEventName() {
-        return mEventName;
+    @NonNull
+    public ScribeCategory getScribeCategory() {
+        return mScribeCategory;
     }
 
-    public String getEventCategory() {
-        return mEventCategory;
+    @NonNull
+    public Name getName() {
+        return mName;
     }
 
+    @NonNull
+    public Category getCategory() {
+        return mCategory;
+    }
+
+    @Nullable
     public SdkProduct getSdkProduct() {
         return mSdkProduct;
     }
 
+    @Nullable
     public String getSdkVersion() {
-        return ClientMetadata.getInstance().getSdkVersion();
+        return mClientMetaData == null ? null : mClientMetaData.getSdkVersion();
     }
 
+    @Nullable
     public String getAdUnitId() {
         return mAdUnitId;
     }
 
+    @Nullable
     public String getAdCreativeId() {
         return mAdCreativeId;
     }
 
+    @Nullable
     public String getAdType() {
         return mAdType;
     }
 
+    @Nullable
     public String getAdNetworkType() {
         return mAdNetworkType;
     }
 
+    @Nullable
     public Double getAdWidthPx() {
         return mAdWidthPx;
     }
 
+    @Nullable
     public Double getAdHeightPx() {
         return mAdHeightPx;
     }
 
+    @Nullable
     public AppPlatform getAppPlatform() {
         return AppPlatform.ANDROID;
     }
 
+    @Nullable
     public String getAppName() {
-        return ClientMetadata.getInstance().getAppName();
+        return mClientMetaData == null ? null : mClientMetaData.getAppName();
     }
 
+    @Nullable
     public String getAppPackageName() {
-        return ClientMetadata.getInstance().getAppPackageName();
+        return mClientMetaData == null ? null : mClientMetaData.getAppPackageName();
     }
 
+    @Nullable
     public String getAppVersion() {
-        return ClientMetadata.getInstance().getAppVersion();
+        return mClientMetaData == null ? null : mClientMetaData.getAppVersion();
     }
 
+    @Nullable
+    public String getClientAdvertisingId() {
+        return mClientMetaData == null ? null : mClientMetaData.getDeviceId();
+    }
+
+    @NonNull
+    public String getObfuscatedClientAdvertisingId() {
+        // This is a placeholder for the advertising id until we approve a plan to use the
+        // real value
+        return "ifa:XXXX";
+    }
+
+    @NonNull
+    public Boolean getClientDoNotTrack() {
+        // Default to true if we don't have access to the client meta data
+        return mClientMetaData == null || mClientMetaData.isDoNotTrackSet();
+    }
+
+    @Nullable
     public String getDeviceManufacturer() {
-        return ClientMetadata.getInstance().getDeviceManufacturer();
+        return mClientMetaData == null ? null : mClientMetaData.getDeviceManufacturer();
     }
 
+    @Nullable
     public String getDeviceModel() {
-        return ClientMetadata.getInstance().getDeviceModel();
+        return mClientMetaData == null ? null : mClientMetaData.getDeviceModel();
     }
 
+    @Nullable
     public String getDeviceProduct() {
-        return ClientMetadata.getInstance().getDeviceProduct();
+        return mClientMetaData == null ? null : mClientMetaData.getDeviceProduct();
     }
 
+    @Nullable
     public String getDeviceOsVersion() {
-        return ClientMetadata.getInstance().getDeviceOsVersion();
+        return mClientMetaData == null ? null : mClientMetaData.getDeviceOsVersion();
     }
 
-    public Integer getDeviceScreenWidthPx() {
-        return ClientMetadata.getInstance().getDeviceScreenWidthPx();
+    @Nullable
+    public Integer getDeviceScreenWidthDip() {
+        return mDeviceScreenWidthDip;
     }
 
-    public Integer getDeviceScreenHeightPx() {
-        return ClientMetadata.getInstance().getDeviceScreenHeightPx();
+    @Nullable
+    public Integer getDeviceScreenHeightDip() {
+        return mDeviceScreenHeightDip;
     }
 
+    @Nullable
     public Double getGeoLat() {
         return mGeoLat;
     }
 
+    @Nullable
     public Double getGeoLon() {
         return mGeoLon;
     }
 
+    @Nullable
     public Double getGeoAccuracy() {
         return mGeoAccuracy;
     }
 
+    @Nullable
     public Double getPerformanceDurationMs() {
         return mPerformanceDurationMs;
     }
 
+    @Nullable
     public MoPubNetworkType getNetworkType() {
-        return ClientMetadata.getInstance().getActiveNetworkType();
+        return mNetworkType;
     }
 
+    @Nullable
     public String getNetworkOperatorCode() {
-        return ClientMetadata.getInstance().getNetworkOperator();
+        return mNetworkOperator;
     }
 
+    @Nullable
     public String getNetworkOperatorName() {
-        return ClientMetadata.getInstance().getNetworkOperatorName();
+        return mNetworkOperatorName;
     }
 
+    @Nullable
     public String getNetworkIsoCountryCode() {
-        return ClientMetadata.getInstance().getIsoCountryCode();
+        return mIsoCountryCode;
     }
 
+    @Nullable
     public String getNetworkSimCode() {
-        return ClientMetadata.getInstance().getSimOperator();
+        return mSimOperator;
     }
 
+    @Nullable
     public String getNetworkSimOperatorName() {
-        return ClientMetadata.getInstance().getSimOperatorName();
+        return mSimOperatorName;
     }
 
+    @Nullable
     public String getNetworkSimIsoCountryCode() {
-        return ClientMetadata.getInstance().getSimIsoCountryCode();
+        return mSimIsoCountryCode;
     }
 
+    @Nullable
     public String getRequestId() {
         return mRequestId;
     }
 
+    @Nullable
     public Integer getRequestStatusCode() {
         return mRequestStatusCode;
     }
 
+    @Nullable
     public String getRequestUri() {
         return mRequestUri;
     }
 
+    @Nullable
     public Integer getRequestRetries() {
         return mRequestRetries;
     }
 
-    public long getTimestampUtcMs() {
+    public double getSamplingRate() {
+        return mSamplingRate;
+    }
+
+    @NonNull
+    public Long getTimestampUtcMs() {
         return mTimestampUtcMs;
     }
 
     @Override
     public String toString() {
         return  "BaseEvent\n" +
-                "EventName: " + getEventName() + "\n" +
-                "EventCategory: " + getEventCategory() + "\n" +
+                "ScribeCategory: " + getScribeCategory() + "\n" +
+                "Name: " + getName() + "\n" +
+                "Category: " + getCategory() + "\n" +
                 "SdkProduct: " + getSdkProduct() + "\n" +
                 "SdkVersion: " + getSdkVersion() + "\n" +
                 "AdUnitId: " + getAdUnitId() + "\n" +
@@ -235,8 +416,8 @@ abstract class BaseEvent {
                 "DeviceModel: " + getDeviceModel() + "\n" +
                 "DeviceProduct: " + getDeviceProduct() + "\n" +
                 "DeviceOsVersion: " + getDeviceOsVersion() + "\n" +
-                "DeviceScreenWidth: " + getDeviceScreenWidthPx() + "\n" +
-                "DeviceScreenHeight: " + getDeviceScreenHeightPx() + "\n" +
+                "DeviceScreenWidth: " + getDeviceScreenWidthDip() + "\n" +
+                "DeviceScreenHeight: " + getDeviceScreenHeightDip() + "\n" +
                 "GeoLat: " + getGeoLat() + "\n" +
                 "GeoLon: " + getGeoLon() + "\n" +
                 "GeoAccuracy: " + getGeoAccuracy() + "\n" +
@@ -251,105 +432,137 @@ abstract class BaseEvent {
                 "RequestId: " + getRequestId() + "\n" +
                 "RequestStatusCode: " + getRequestStatusCode() + "\n" +
                 "RequestUri: " + getRequestUri() + "\n" +
-                "RequestRetries" + getRequestRetries() + "\n" +
+                "RequestRetries: " + getRequestRetries() + "\n" +
+                "SamplingRate: " + getSamplingRate() + "\n" +
                 "TimestampUtcMs: " + new SimpleDateFormat().format(new Date(getTimestampUtcMs())) + "\n";
     }
 
-    static abstract class Builder {
-        private String mEventName;
-        private String mEventCategory;
-        private SdkProduct mSdkProduct;
-        private String mAdUnitId;
-        private String mAdCreativeId;
-        private String mAdType;
-        private String mAdNetworkType;
-        private Double mAdWidthPx;
-        private Double mAdHeightPx;
-        private Double mGeoLat;
-        private Double mGeoLon;
-        private Double mGeoAccuracy;
-        private Double mPerformanceDurationMs;
-        private String mRequestId;
-        private Integer mRequestStatusCode;
-        private String mRequestUri;
-        private Integer mRequestRetries;
+    public static abstract class Builder {
+        @NonNull private ScribeCategory mScribeCategory;
+        @NonNull private Name mName;
+        @NonNull private Category mCategory;
+        @Nullable private SdkProduct mSdkProduct;
+        @Nullable private String mAdUnitId;
+        @Nullable private String mAdCreativeId;
+        @Nullable private String mAdType;
+        @Nullable private String mAdNetworkType;
+        @Nullable private Double mAdWidthPx;
+        @Nullable private Double mAdHeightPx;
+        @Nullable private Double mGeoLat;
+        @Nullable private Double mGeoLon;
+        @Nullable private Double mGeoAccuracy;
+        @Nullable private Double mPerformanceDurationMs;
+        @Nullable private String mRequestId;
+        @Nullable private Integer mRequestStatusCode;
+        @Nullable private String mRequestUri;
+        @Nullable private Integer mRequestRetries;
 
-        public Builder(String eventName, String eventCategory) {
-            mEventName = eventName;
-            mEventCategory = eventCategory;
+        /**
+         * The percentage of events, in range 0 - 1.0, to be logged.
+         */
+        private double mSamplingRate;
+
+        public Builder(@NonNull ScribeCategory scribeCategory,
+                @NonNull Name name,
+                @NonNull Category category,
+                double samplingRate) {
+            Preconditions.checkNotNull(scribeCategory);
+            Preconditions.checkNotNull(name);
+            Preconditions.checkNotNull(category);
+            Preconditions.checkArgument(samplingRate >= 0 && samplingRate <= 1.0);
+
+            mScribeCategory = scribeCategory;
+            mName = name;
+            mCategory = category;
+            mSamplingRate = samplingRate;
         }
 
-        public Builder withSdkProduct(SdkProduct sdkProduct) {
+        @NonNull
+        public Builder withSdkProduct(@Nullable SdkProduct sdkProduct) {
             mSdkProduct = sdkProduct;
             return this;
         }
 
-        public Builder withAdUnitId(String adUnitId) {
+        @NonNull
+        public Builder withAdUnitId(@Nullable String adUnitId) {
             mAdUnitId = adUnitId;
             return this;
         }
 
-        public Builder withAdCreativeId(String adCreativeId) {
+        @NonNull
+        public Builder withAdCreativeId(@Nullable String adCreativeId) {
             mAdCreativeId = adCreativeId;
             return this;
         }
 
-        public Builder withAdType(String adType) {
+        @NonNull
+        public Builder withAdType(@Nullable String adType) {
             mAdType = adType;
             return this;
         }
 
-        public Builder withAdNetworkType(String adNetworkType) {
+        @NonNull
+        public Builder withAdNetworkType(@Nullable String adNetworkType) {
             mAdNetworkType = adNetworkType;
             return this;
         }
 
-        public Builder withAdWidthPx(Double adWidthPx) {
+        @NonNull
+        public Builder withAdWidthPx(@Nullable Double adWidthPx) {
             mAdWidthPx = adWidthPx;
             return this;
         }
 
-        public Builder withAdHeightPx(Double adHeightPx) {
+        @NonNull
+        public Builder withAdHeightPx(@Nullable Double adHeightPx) {
             mAdHeightPx = adHeightPx;
             return this;
         }
 
-        public Builder withGeoLat(Double geoLat) {
+        @NonNull
+        public Builder withGeoLat(@Nullable Double geoLat) {
             mGeoLat = geoLat;
             return this;
         }
 
-        public Builder withGeoLon(Double geoLon) {
+        @NonNull
+        public Builder withGeoLon(@Nullable Double geoLon) {
             mGeoLon = geoLon;
             return this;
         }
 
-        public Builder withGeoAccuracy(Double geoAccuracy) {
+        @NonNull
+        public Builder withGeoAccuracy(@Nullable Double geoAccuracy) {
             mGeoAccuracy = geoAccuracy;
             return this;
         }
 
-        public Builder withPerformanceDurationMs(Double performanceDurationMs) {
+        @NonNull
+        public Builder withPerformanceDurationMs(@Nullable Double performanceDurationMs) {
             mPerformanceDurationMs = performanceDurationMs;
             return this;
         }
 
-        public Builder withRequestId(String requestId) {
+        @NonNull
+        public Builder withRequestId(@Nullable String requestId) {
             mRequestId = requestId;
             return this;
         }
 
-        public Builder withRequestStatusCode(Integer requestStatusCode) {
+        @NonNull
+        public Builder withRequestStatusCode(@Nullable Integer requestStatusCode) {
             mRequestStatusCode = requestStatusCode;
             return this;
         }
 
-        public Builder withRequestUri(String requestUri) {
+        @NonNull
+        public Builder withRequestUri(@Nullable String requestUri) {
             mRequestUri = requestUri;
             return this;
         }
 
-        public Builder withRequestRetries(Integer requestRetries) {
+        @NonNull
+        public Builder withRequestRetries(@Nullable Integer requestRetries) {
             mRequestRetries = requestRetries;
             return this;
         }

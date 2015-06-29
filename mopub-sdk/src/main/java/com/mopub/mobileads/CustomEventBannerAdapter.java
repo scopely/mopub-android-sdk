@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.view.View;
 
 import com.mopub.common.AdReport;
+import com.mopub.common.Constants;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.CustomEventBanner.CustomEventBannerListener;
@@ -15,14 +16,16 @@ import com.mopub.mobileads.factories.CustomEventBannerFactory;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static com.mopub.common.DataKeys.AD_HEIGHT;
 import static com.mopub.common.DataKeys.AD_REPORT_KEY;
+import static com.mopub.common.DataKeys.AD_WIDTH;
 import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_NOT_FOUND;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_TIMEOUT;
 import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 
 public class CustomEventBannerAdapter implements CustomEventBannerListener {
-    public static final int DEFAULT_BANNER_TIMEOUT_DELAY = 10000;
+    public static final int DEFAULT_BANNER_TIMEOUT_DELAY = Constants.TEN_SECONDS_MILLIS;
     private boolean mInvalidated;
     private MoPubView mMoPubView;
     private Context mContext;
@@ -70,6 +73,8 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
         }
         mLocalExtras.put(BROADCAST_IDENTIFIER_KEY, broadcastIdentifier);
         mLocalExtras.put(AD_REPORT_KEY, adReport);
+        mLocalExtras.put(AD_WIDTH, mMoPubView.getAdWidth());
+        mLocalExtras.put(AD_HEIGHT, mMoPubView.getAdHeight());
     }
 
     void loadAd() {
