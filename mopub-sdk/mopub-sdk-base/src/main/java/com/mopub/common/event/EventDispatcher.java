@@ -7,14 +7,16 @@ import android.os.Message;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 
+import java.util.Collection;
+
 public class EventDispatcher {
-    private final Iterable<EventRecorder> mEventRecorders;
+    private final Collection<EventRecorder> mEventRecorders;
     private final Looper mLooper;
     private final Handler mMessageHandler;
     private final Handler.Callback mHandlerCallback;
 
     @VisibleForTesting
-    EventDispatcher(Iterable<EventRecorder> recorders, Looper looper) {
+    EventDispatcher(Collection<EventRecorder> recorders, Looper looper) {
         mEventRecorders = recorders;
         mLooper = looper;
         mHandlerCallback = new Handler.Callback() {
@@ -38,12 +40,22 @@ public class EventDispatcher {
     }
 
     @VisibleForTesting
-    Iterable<EventRecorder> getEventRecorders() {
+    Collection<EventRecorder> getEventRecorders() {
         return mEventRecorders;
     }
 
     @VisibleForTesting
     Handler.Callback getHandlerCallback() {
         return mHandlerCallback;
+    }
+
+    public void registerEventRecorder(EventRecorder eventRecorder) {
+        if(!mEventRecorders.contains(eventRecorder)){
+            mEventRecorders.add(eventRecorder);
+        }
+    }
+
+    public void unregisterEventRecorder(EventRecorder eventRecorder) {
+        mEventRecorders.remove(eventRecorder);
     }
 }
