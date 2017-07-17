@@ -5,6 +5,8 @@ import android.os.HandlerThread;
 import com.mopub.common.VisibleForTesting;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Public interface used to record client events.
@@ -19,6 +21,14 @@ public class MoPubEvents {
      */
     public static void log(BaseEvent baseEvent) {
         MoPubEvents.getDispatcher().dispatch(baseEvent);
+    }
+
+    public static void registerEventRecorder(EventRecorder eventRecorder) {
+        MoPubEvents.getDispatcher().registerEventRecorder(eventRecorder);
+    }
+
+    public static void unregisterEventRecorder(EventRecorder eventRecorder) {
+        MoPubEvents.getDispatcher().unregisterEventRecorder(eventRecorder);
     }
 
     @VisibleForTesting
@@ -42,7 +52,7 @@ public class MoPubEvents {
             synchronized (MoPubEvents.class) {
                 result = sEventDispatcher;
                 if (result == null) {
-                    ArrayList<EventRecorder> recorders = new ArrayList<EventRecorder>();
+                    List<EventRecorder> recorders = Collections.synchronizedList(new ArrayList<EventRecorder>());
                     HandlerThread handlerThread = new HandlerThread("mopub_event_logging");
                     handlerThread.start();
                     recorders.add(new ScribeEventRecorder(handlerThread.getLooper()));
