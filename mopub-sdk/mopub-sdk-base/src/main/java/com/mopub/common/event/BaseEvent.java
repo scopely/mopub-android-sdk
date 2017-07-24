@@ -2,12 +2,14 @@ package com.mopub.common.event;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.ArrayMap;
 
 import com.mopub.common.ClientMetadata;
 import com.mopub.common.Preconditions;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 import static com.mopub.common.ClientMetadata.MoPubNetworkType;
 
@@ -461,6 +463,50 @@ public abstract class BaseEvent {
                 "RequestRetries: " + getRequestRetries() + "\n" +
                 "SamplingRate: " + getSamplingRate() + "\n" +
                 "TimestampUtcMs: " + new SimpleDateFormat().format(new Date(getTimestampUtcMs())) + "\n";
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new ArrayMap<>();
+        map.put("ScribeCategory", getScribeCategory());
+        map.put("Name", getName());
+        map.put("Category", getCategory());
+        map.put("SdkProduct", getSdkProduct());
+        map.put("SdkVersion", getSdkVersion());
+        map.put("AdUnitId", getAdUnitId());
+        map.put("AdCreativeId", getAdCreativeId());
+        map.put("AdType", getAdType());
+        map.put("AdNetworkType", getAdNetworkType());
+        map.put("AdWidthPx", getAdWidthPx());
+        map.put("AdHeightPx", getAdHeightPx());
+        map.put("DspCreativeId", getDspCreativeId());
+        map.put("AppPlatform", getAppPlatform());
+        map.put("AppName", getAppName());
+        map.put("AppPackageName", getAppPackageName());
+        map.put("AppVersion", getAppVersion());
+        map.put("DeviceManufacturer", getDeviceManufacturer());
+        map.put("DeviceModel", getDeviceModel());
+        map.put("DeviceProduct", getDeviceProduct());
+        map.put("DeviceOsVersion", getDeviceOsVersion());
+        map.put("DeviceScreenWidth", getDeviceScreenWidthDip());
+        map.put("DeviceScreenHeight", getDeviceScreenHeightDip());
+        map.put("GeoLat", getGeoLat());
+        map.put("GeoLon", getGeoLon());
+        map.put("GeoAccuracy", getGeoAccuracy());
+        map.put("PerformanceDurationMs", getPerformanceDurationMs());
+        map.put("NetworkType", getNetworkType());
+        map.put("NetworkOperatorCode", getNetworkOperatorCode());
+        map.put("NetworkOperatorName", getNetworkOperatorName());
+        map.put("NetworkIsoCountryCode", getNetworkIsoCountryCode());
+        map.put("NetworkSimCode", getNetworkSimCode());
+        map.put("NetworkSimOperatorName", getNetworkSimOperatorName());
+        map.put("NetworkSimIsoCountryCode", getNetworkSimIsoCountryCode());
+        map.put("RequestId", getRequestId());
+        map.put("RequestStatusCode", getRequestStatusCode());
+        map.put("RequestUri", getRequestUri());
+        map.put("RequestRetries", getRequestRetries());
+        map.put("SamplingRate", getSamplingRate());
+        map.put("TimestampUtcMs", new SimpleDateFormat().format(new Date(getTimestampUtcMs())));
+        return map;
     }
 
     public static abstract class Builder {
