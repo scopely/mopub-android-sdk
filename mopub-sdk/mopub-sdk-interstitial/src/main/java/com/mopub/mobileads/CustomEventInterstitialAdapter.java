@@ -35,10 +35,19 @@ public class CustomEventInterstitialAdapter implements CustomEventInterstitialLi
     private final Runnable mTimeout;
 
     public CustomEventInterstitialAdapter(@NonNull final MoPubInterstitial moPubInterstitial,
+                                          @NonNull final String className,
+                                          @NonNull final Map<String, String> serverExtras,
+                                          long broadcastIdentifier,
+                                          @Nullable AdReport adReport) {
+        this(moPubInterstitial, className, serverExtras, broadcastIdentifier, adReport, CustomEventInterstitialFactory.getInstance());
+    }
+
+    public CustomEventInterstitialAdapter(@NonNull final MoPubInterstitial moPubInterstitial,
             @NonNull final String className,
             @NonNull final Map<String, String> serverExtras,
             long broadcastIdentifier,
-            @Nullable AdReport adReport) {
+            @Nullable AdReport adReport,
+            @NonNull CustomEventInterstitialFactory customEventInterstitialFactory) {
         Preconditions.checkNotNull(serverExtras);
         mHandler = new Handler();
         mMoPubInterstitial = moPubInterstitial;
@@ -54,7 +63,7 @@ public class CustomEventInterstitialAdapter implements CustomEventInterstitialLi
 
         MoPubLog.d("Attempting to invoke custom event: " + className);
         try {
-            mCustomEventInterstitial = CustomEventInterstitialFactory.create(className);
+            mCustomEventInterstitial = customEventInterstitialFactory.create(className);
         } catch (Exception exception) {
             MoPubLog.d("Couldn't locate or instantiate custom event: " + className + ".");
             mMoPubInterstitial.onCustomEventInterstitialFailed(ADAPTER_NOT_FOUND);

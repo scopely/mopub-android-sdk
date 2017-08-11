@@ -23,4 +23,8 @@ public class CustomEventInterstitialFactory {
         interstitialConstructor.setAccessible(true);
         return (CustomEventInterstitial) interstitialConstructor.newInstance();
     }
+
+    public static CustomEventInterstitialFactory getInstance() {
+        return instance;
+    }
 }

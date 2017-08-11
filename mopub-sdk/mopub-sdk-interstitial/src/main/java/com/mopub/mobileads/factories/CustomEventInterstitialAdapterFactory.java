@@ -18,7 +18,11 @@ public class CustomEventInterstitialAdapterFactory {
         return instance.internalCreate(moPubInterstitial, className, serverExtras, broadcastIdentifier, adReport);
     }
 
-    protected CustomEventInterstitialAdapter internalCreate(MoPubInterstitial moPubInterstitial, String className, Map<String, String> serverExtras, long broadcastIdentifier, AdReport adReport) {
+    public CustomEventInterstitialAdapter internalCreate(MoPubInterstitial moPubInterstitial, String className, Map<String, String> serverExtras, long broadcastIdentifier, AdReport adReport) {
         return new CustomEventInterstitialAdapter(moPubInterstitial, className, serverExtras, broadcastIdentifier, adReport);
+    }
+
+    public static CustomEventInterstitialAdapterFactory getInstance() {
+        return instance;
     }
 }

@@ -61,6 +61,7 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
     @NonNull private Handler mHandler;
     @NonNull private final Runnable mAdExpiration;
     @NonNull private volatile InterstitialState mCurrentInterstitialState;
+    @NonNull private CustomEventInterstitialAdapterFactory mCustomEventInterstitialAdapterFactory;
 
     public interface InterstitialAdListener {
         void onInterstitialLoaded(MoPubInterstitial interstitial);
@@ -72,6 +73,7 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
     public MoPubInterstitial(@NonNull final Activity activity, @NonNull final String adUnitId) {
         mActivity = activity;
+        mCustomEventInterstitialAdapterFactory = CustomEventInterstitialAdapterFactory.getInstance();
 
         mInterstitialView = new MoPubInterstitialView(mActivity);
         mInterstitialView.setAdUnitId(adUnitId);
@@ -344,6 +346,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         mInterstitialView.setLocalExtras(extras);
     }
 
+    public void setCustomEventInterstitialAdapterFactory(@NonNull CustomEventInterstitialAdapterFactory customEventInterstitialAdapterFactory) {
+        this.mCustomEventInterstitialAdapterFactory = customEventInterstitialAdapterFactory;
+    }
+
     @NonNull
     public Map<String, Object> getLocalExtras() {
         return mInterstitialView.getLocalExtras();
@@ -452,7 +458,7 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
             MoPubLog.d("Loading custom event interstitial adapter.");
 
-            mCustomEventInterstitialAdapter = CustomEventInterstitialAdapterFactory.create(
+            mCustomEventInterstitialAdapter = mCustomEventInterstitialAdapterFactory.internalCreate(
                     MoPubInterstitial.this,
                     customEventClassName,
                     serverExtras,

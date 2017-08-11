@@ -31,6 +31,11 @@ public class MoPubRewardedVideos {
     }
 
     @ReflectionTarget
+    public static void setRewardedAnalyticsHook(@Nullable MopubRewardedAnalyticsHook analyticsHook) {
+        MoPubRewardedVideoManager.setAnalyticsHook(analyticsHook);
+    }
+
+    @ReflectionTarget
     public static void loadRewardedVideo(@NonNull String adUnitId,
             @Nullable MediationSettings... mediationSettings) {
         Preconditions.checkNotNull(adUnitId);
