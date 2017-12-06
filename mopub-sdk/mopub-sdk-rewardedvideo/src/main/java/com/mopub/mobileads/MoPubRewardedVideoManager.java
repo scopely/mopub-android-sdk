@@ -608,7 +608,8 @@ public class MoPubRewardedVideoManager {
     public static <T extends CustomEventRewardedAd>
     void onRewardedVideoLoadSuccess(@NonNull final Class<T> customEventClass, @NonNull final String thirdPartyId) {
         if(sInstance.mAnalyticsHook != null) {
-            sInstance.mAnalyticsHook.onRewardedVideoLoadSuccess(customEventClass, thirdPartyId);
+            sInstance.mAnalyticsHook.onRewardedVideoLoadSuccess(customEventClass, thirdPartyId, sInstance.mRewardedAdData
+                    .getMoPubIdsForAdNetwork(customEventClass, thirdPartyId));
         }
         postToInstance(new ForEachMoPubIdRunnable(customEventClass, thirdPartyId) {
             @Override
@@ -624,7 +625,8 @@ public class MoPubRewardedVideoManager {
     public static <T extends CustomEventRewardedAd>
     void onRewardedVideoLoadFailure(@NonNull final Class<T> customEventClass, final String thirdPartyId, final MoPubErrorCode errorCode) {
         if(sInstance.mAnalyticsHook != null) {
-            sInstance.mAnalyticsHook.onRewardedVideoLoadFailure(customEventClass, thirdPartyId, errorCode);
+            sInstance.mAnalyticsHook.onRewardedVideoLoadFailure(customEventClass, thirdPartyId, errorCode, sInstance.mRewardedAdData
+                    .getMoPubIdsForAdNetwork(customEventClass, thirdPartyId));
         }
         postToInstance(new ForEachMoPubIdRunnable(customEventClass, thirdPartyId) {
             @Override
