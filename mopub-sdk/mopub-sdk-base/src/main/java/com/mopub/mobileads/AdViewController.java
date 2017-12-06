@@ -94,6 +94,7 @@ public class AdViewController {
     private int mTimeoutMilliseconds;
     @Nullable private AdRequest mActiveRequest;
     @Nullable private Integer mRefreshTimeMillis;
+    @Nullable private RefreshListener mRefreshListener;
 
     public static void setShouldHonorServerDimensions(View view) {
         sViewShouldHonorServerDimensions.put(view, true);
@@ -128,6 +129,9 @@ public class AdViewController {
 
         mRefreshRunnable = new Runnable() {
             public void run() {
+                if(mRefreshListener != null) {
+                    mRefreshListener.onRefresh();
+                }
                 internalLoadAd();
             }
         };
@@ -597,5 +601,9 @@ public class AdViewController {
     @VisibleForTesting
     void setRefreshTimeMillis(@Nullable final Integer refreshTimeMillis) {
         mRefreshTimeMillis = refreshTimeMillis;
+    }
+
+    public void setRefreshListener(@Nullable RefreshListener refreshListener) {
+        this.mRefreshListener = refreshListener;
     }
 }
