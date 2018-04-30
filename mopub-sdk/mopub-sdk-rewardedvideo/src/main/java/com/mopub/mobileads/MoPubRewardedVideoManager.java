@@ -78,6 +78,8 @@ public class MoPubRewardedVideoManager {
     @NonNull private final AdRequestStatusMapping mAdRequestStatus;
     @NonNull private final RewardedAdData mRewardedAdData;
     @Nullable private MoPubRewardedVideoListener mVideoListener;
+    @Nullable private MopubRewardedAnalyticsHook mAnalyticsHook;
+
 
     @NonNull private final Set<MediationSettings> mGlobalMediationSettings;
     @NonNull private final Map<String, Set<MediationSettings>> mInstanceMediationSettings;
@@ -287,6 +289,14 @@ public class MoPubRewardedVideoManager {
     public static void setVideoListener(@Nullable MoPubRewardedVideoListener listener) {
         if (sInstance != null) {
             sInstance.mVideoListener = listener;
+        } else {
+            logErrorNotInitialized();
+        }
+    }
+
+    public static void setAnalyticsHook(@Nullable MopubRewardedAnalyticsHook listener) {
+        if (sInstance != null) {
+            sInstance.mAnalyticsHook = listener;
         } else {
             logErrorNotInitialized();
         }
