@@ -47,11 +47,12 @@ public class AdRequestStatusMappingTest {
 
     @Test
     public void markLoaded_shouldUpdateUrls_shouldSetCanPlayTrue() {
-        subject.markLoaded(key1, "fail", "imp", "click");
+        subject.markLoaded(key1, "fail", "imp", "click", "id");
 
         assertThat(subject.getFailoverUrl(key1)).isEqualTo("fail");
         assertThat(subject.getImpressionTrackerUrlString(key1)).isEqualTo("imp");
         assertThat(subject.getClickTrackerUrlString(key1)).isEqualTo("click");
+        assertThat(subject.getDspCreativeIdString(key1)).isEqualTo("id");
 
         assertThat(subject.canPlay(key1)).isTrue();
         assertThat(subject.isLoading(key1)).isFalse();
@@ -59,11 +60,12 @@ public class AdRequestStatusMappingTest {
 
     @Test
     public void markLoaded_withNullValues_shouldUpdateUrls_shouldSetCanPlayTrue() {
-        subject.markLoaded(key1, null, null, null);
+        subject.markLoaded(key1, null, null, null, null);
 
         assertThat(subject.getFailoverUrl(key1)).isNull();
         assertThat(subject.getImpressionTrackerUrlString(key1)).isNull();
         assertThat(subject.getClickTrackerUrlString(key1)).isNull();
+        assertThat(subject.getDspCreativeIdString(key1)).isNull();
 
         assertThat(subject.canPlay(key1)).isTrue();
         assertThat(subject.isLoading(key1)).isFalse();
@@ -71,12 +73,13 @@ public class AdRequestStatusMappingTest {
 
     @Test
     public void markPlayed_afterLoaded_shouldKeepExistingUrls_shouldSetCanPlayFalse() {
-        subject.markLoaded(key1, "fail", "imp", "click");
+        subject.markLoaded(key1, "fail", "imp", "click", "id");
         subject.markPlayed(key1);
 
         assertThat(subject.getFailoverUrl(key1)).isEqualTo("fail");
         assertThat(subject.getImpressionTrackerUrlString(key1)).isEqualTo("imp");
         assertThat(subject.getClickTrackerUrlString(key1)).isEqualTo("click");
+        assertThat(subject.getDspCreativeIdString(key1)).isEqualTo("id");
 
         assertThat(subject.canPlay(key1)).isFalse();
         assertThat(subject.isLoading(key1)).isFalse();
@@ -96,22 +99,35 @@ public class AdRequestStatusMappingTest {
 
     @Test
     public void clearImpression_shouldResetImpressionUrl() {
-        subject.markLoaded(key1, "fail", "imp", "click");
+        subject.markLoaded(key1, "fail", "imp", "click", "id");
         subject.clearImpressionUrl(key1);
 
         assertThat(subject.getFailoverUrl(key1)).isEqualTo("fail");
         assertThat(subject.getImpressionTrackerUrlString(key1)).isNull();
         assertThat(subject.getClickTrackerUrlString(key1)).isEqualTo("click");
+        assertThat(subject.getDspCreativeIdString(key1)).isEqualTo("id");
     }
 
     @Test
     public void clearclick_shouldResetClickurl() {
-        subject.markLoaded(key1, "fail", "imp", "click");
+        subject.markLoaded(key1, "fail", "imp", "click", "id");
         subject.clearClickUrl(key1);
 
         assertThat(subject.getFailoverUrl(key1)).isEqualTo("fail");
         assertThat(subject.getImpressionTrackerUrlString(key1)).isEqualTo("imp");
         assertThat(subject.getClickTrackerUrlString(key1)).isNull();
+        assertThat(subject.getDspCreativeIdString(key1)).isEqualTo("id");
+    }
+
+    @Test
+    public void clearcreative_shouldResetCreativeId() {
+        subject.markLoaded(key1, "fail", "imp", "click", "id");
+        subject.clearDspCreativeId(key1);
+
+        assertThat(subject.getFailoverUrl(key1)).isEqualTo("fail");
+        assertThat(subject.getImpressionTrackerUrlString(key1)).isEqualTo("imp");
+        assertThat(subject.getClickTrackerUrlString(key1)).isEqualTo("click");
+        assertThat(subject.getDspCreativeIdString(key1)).isNull();
     }
 
     @Test
@@ -119,6 +135,7 @@ public class AdRequestStatusMappingTest {
         assertThat(subject.getFailoverUrl(key1)).isNull();
         assertThat(subject.getImpressionTrackerUrlString(key1)).isNull();
         assertThat(subject.getClickTrackerUrlString(key1)).isNull();
+        assertThat(subject.getDspCreativeIdString(key1)).isNull();
 
         assertThat(subject.canPlay(key1)).isFalse();
         assertThat(subject.isLoading(key1)).isFalse();

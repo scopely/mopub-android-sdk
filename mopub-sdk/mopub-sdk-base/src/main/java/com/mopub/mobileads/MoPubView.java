@@ -290,6 +290,11 @@ public class MoPubView extends FrameLayout {
         return (mAdViewController != null) ? mAdViewController.getAdHeight() : 0;
     }
 
+    @Nullable
+    public AdReport getAdReport() {
+        return mAdViewController != null ? mAdViewController.getAdReport() : null;
+    }
+
     public Activity getActivity() {
         return (Activity) mContext;
     }

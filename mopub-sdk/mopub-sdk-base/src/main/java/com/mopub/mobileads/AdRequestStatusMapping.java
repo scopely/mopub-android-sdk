@@ -30,12 +30,14 @@ public class AdRequestStatusMapping {
             @NonNull final String adUnitId,
             @Nullable final String failUrlString,
             @Nullable final String impressionTrackerUrlString,
-            @Nullable final String clickTrackerUrlString) {
+            @Nullable final String clickTrackerUrlString,
+            @Nullable final String dspCreativeId) {
         mAdUnitToAdRequestStatus.put(adUnitId, new AdRequestStatus(
                 LoadingStatus.LOADED,
                 failUrlString,
                 impressionTrackerUrlString,
-                clickTrackerUrlString));
+                clickTrackerUrlString,
+                dspCreativeId));
     }
 
     void markPlayed(@NonNull final String adUnitId) {
@@ -86,6 +88,14 @@ public class AdRequestStatusMapping {
         return mAdUnitToAdRequestStatus.get(adUnitId).getClickUrl();
     }
 
+    @Nullable String getDspCreativeIdString(@NonNull final String adUnitId) {
+        if(!mAdUnitToAdRequestStatus.containsKey(adUnitId)) {
+            return null;
+        }
+
+        return mAdUnitToAdRequestStatus.get(adUnitId).getDspCreativeId();
+    }
+
     void clearImpressionUrl(@NonNull final String adUnitId) {
         if (mAdUnitToAdRequestStatus.containsKey(adUnitId)) {
             mAdUnitToAdRequestStatus.get(adUnitId).setImpressionUrl(null);
@@ -95,6 +105,12 @@ public class AdRequestStatusMapping {
     void clearClickUrl(@NonNull final String adUnitId) {
         if (mAdUnitToAdRequestStatus.containsKey(adUnitId)) {
             mAdUnitToAdRequestStatus.get(adUnitId).setClickUrl(null);
+        }
+    }
+
+    void clearDspCreativeId(@NonNull final String adUnitId) {
+        if(mAdUnitToAdRequestStatus.containsKey(adUnitId)) {
+            mAdUnitToAdRequestStatus.get(adUnitId).setDspCreativeId(null);
         }
     }
 
@@ -114,22 +130,26 @@ public class AdRequestStatusMapping {
         private String mImpressionUrl;
         @Nullable
         private String mClickUrl;
+        @Nullable
+        private String mDspCreativeId;
 
         public AdRequestStatus(@NonNull final LoadingStatus loadingStatus) {
-            this(loadingStatus, null, null, null);
+            this(loadingStatus, null, null, null, null);
         }
 
         public AdRequestStatus(
                 @NonNull final LoadingStatus loadingStatus,
                 @Nullable final String failUrl,
                 @Nullable final String impressionUrl,
-                @Nullable final String clickUrl) {
+                @Nullable final String clickUrl,
+                @Nullable final String dspCreativeId) {
             Preconditions.checkNotNull(loadingStatus);
 
             mLoadingStatus = loadingStatus;
             mFailUrl = failUrl;
             mImpressionUrl = impressionUrl;
             mClickUrl = clickUrl;
+            mDspCreativeId = dspCreativeId;
         }
 
         @NonNull
@@ -162,6 +182,15 @@ public class AdRequestStatusMapping {
 
         private void setClickUrl(@Nullable final String clickUrl) {
             mClickUrl = clickUrl;
+        }
+
+        @Nullable
+        public String getDspCreativeId() {
+            return mDspCreativeId;
+        }
+
+        public void setDspCreativeId(@Nullable String mDspCreativeId) {
+            this.mDspCreativeId = mDspCreativeId;
         }
 
         @Override

@@ -491,7 +491,8 @@ public class MoPubRewardedVideoManager {
         mAdRequestStatus.markLoaded(adUnitId,
                 adResponse.getFailoverUrl(),
                 adResponse.getImpressionTrackingUrl(),
-                adResponse.getClickTrackingUrl());
+                adResponse.getClickTrackingUrl(),
+                adResponse.getDspCreativeId());
 
         Integer timeoutMillis = adResponse.getAdTimeoutMillis();
         if (timeoutMillis == null || timeoutMillis <= 0) {
@@ -1022,7 +1023,7 @@ public class MoPubRewardedVideoManager {
     @Deprecated
     @VisibleForTesting
     @Nullable
-    static AdRequestStatusMapping getAdRequestStatusMapping() {
+    public static AdRequestStatusMapping getAdRequestStatusMapping() {
         if (sInstance != null) {
             return sInstance.mAdRequestStatus;
         }
