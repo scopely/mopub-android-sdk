@@ -88,7 +88,7 @@ public class AdRequestStatusMapping {
         return mAdUnitToAdRequestStatus.get(adUnitId).getClickUrl();
     }
 
-    @Nullable String getDspCreativeIdString(@NonNull final String adUnitId) {
+    @Nullable public String getDspCreativeIdString(@NonNull final String adUnitId) {
         if(!mAdUnitToAdRequestStatus.containsKey(adUnitId)) {
             return null;
         }
