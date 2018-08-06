@@ -65,7 +65,7 @@ public class CustomEventInterstitialAdapter implements CustomEventInterstitialLi
 
         MoPubLog.d("Attempting to invoke custom event: " + className);
         try {
-            mCustomEventInterstitial = customEventInterstitialFactory.create(className);
+            mCustomEventInterstitial = customEventInterstitialFactory.internalCreate(className);
         } catch (Exception exception) {
             MoPubLog.d("Couldn't locate or instantiate custom event: " + className + ".");
             mMoPubInterstitial.onCustomEventInterstitialFailed(ADAPTER_NOT_FOUND);
