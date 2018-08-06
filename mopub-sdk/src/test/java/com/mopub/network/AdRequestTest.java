@@ -514,31 +514,12 @@ public class AdRequestTest {
     }
 
     @Test
-    public void getHeaders_withDefaultLocale_shouldReturnDefaultLanguageCode() throws Exception {
-        Map<String, String> expectedHeaders = new TreeMap<String, String>();
-        expectedHeaders.put(ResponseHeader.ACCEPT_LANGUAGE.getKey(), "en");
-
-        assertThat(subject.getHeaders()).isEqualTo(expectedHeaders);
-    }
-
-    @Test
     public void getHeaders_withUserPreferredLocale_shouldReturnUserPreferredLanguageCode() throws Exception {
         Map<String, String> expectedHeaders = new TreeMap<String, String>();
         expectedHeaders.put(ResponseHeader.ACCEPT_LANGUAGE.getKey(), "fr");
 
         // Assume user-preferred locale is fr_CA
         activity.getResources().getConfiguration().locale = Locale.CANADA_FRENCH;
-
-        assertThat(subject.getHeaders()).isEqualTo(expectedHeaders);
-    }
-
-    @Test
-    public void getHeaders_withUserPreferredLocaleAsNull_shouldReturnDefaultLanguageCode() throws Exception {
-        Map<String, String> expectedHeaders = new TreeMap<String, String>();
-        expectedHeaders.put(ResponseHeader.ACCEPT_LANGUAGE.getKey(), "en");
-
-        // Assume user-preferred locale is null
-        activity.getResources().getConfiguration().locale = null;
 
         assertThat(subject.getHeaders()).isEqualTo(expectedHeaders);
     }

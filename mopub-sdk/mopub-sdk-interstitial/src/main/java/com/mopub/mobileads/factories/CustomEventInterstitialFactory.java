@@ -16,7 +16,7 @@ public class CustomEventInterstitialFactory {
         instance = factory;
     }
 
-    protected CustomEventInterstitial internalCreate(String className) throws Exception {
+    public CustomEventInterstitial internalCreate(String className) throws Exception {
         Class<? extends CustomEventInterstitial> interstitialClass = Class.forName(className)
                 .asSubclass(CustomEventInterstitial.class);
         Constructor<?> interstitialConstructor = interstitialClass.getDeclaredConstructor((Class[]) null);
