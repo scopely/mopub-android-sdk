@@ -311,6 +311,15 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         return mInterstitialView.getKeywords();
     }
 
+    public void setUserDataKeywords(@Nullable final String userDataKeywords) {
+        mInterstitialView.setUserDataKeywords(userDataKeywords);
+    }
+
+    @Nullable
+    public String getUserDataKeywords() {
+        return mInterstitialView.getUserDataKeywords();
+    }
+
     @NonNull
     public MoPubInterstitialView getInterstitialView() {
         return mInterstitialView;
