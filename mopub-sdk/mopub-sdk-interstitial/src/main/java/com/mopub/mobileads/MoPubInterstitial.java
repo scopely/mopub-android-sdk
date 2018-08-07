@@ -57,6 +57,7 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
     @NonNull private MoPubInterstitialView mInterstitialView;
     @Nullable private CustomEventInterstitialAdapter mCustomEventInterstitialAdapter;
     @Nullable private InterstitialAdListener mInterstitialAdListener;
+    @Nullable private InterstitialCustomEventAdListener mInterstitialCustomEventAdListener;
     @NonNull private Activity mActivity;
     @NonNull private Handler mHandler;
     @NonNull private final Runnable mAdExpiration;
@@ -343,6 +344,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         mInterstitialAdListener = listener;
     }
 
+    public void setInterstitialCustomEventAdListener(@Nullable final InterstitialCustomEventAdListener listener) {
+        mInterstitialCustomEventAdListener = listener;
+    }
+
     @Nullable
     public InterstitialAdListener getInterstitialAdListener() {
         return mInterstitialAdListener;
@@ -395,6 +400,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
         if (!mInterstitialView.loadFailUrl(errorCode)) {
             attemptStateTransition(IDLE);
+        }
+
+        if (mInterstitialCustomEventAdListener != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialFailed(this.getMoPubInterstitialView().getCustomEventClassName());
         }
     }
 
@@ -471,7 +480,9 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
             }
 
             MoPubLog.d("Loading custom event interstitial adapter.");
-
+            if (mInterstitialCustomEventAdListener != null) {
+                mInterstitialCustomEventAdListener.onCustomEventInterstitialAttempted(customEventClassName);
+            }
             mCustomEventInterstitialAdapter = mCustomEventInterstitialAdapterFactory.internalCreate(
                     MoPubInterstitial.this,
                     customEventClassName,
