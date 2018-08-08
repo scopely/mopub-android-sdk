@@ -36,6 +36,11 @@ public class MoPubView extends FrameLayout {
         public void onBannerCollapsed(MoPubView banner);
     }
 
+    public interface BannerCustomEventAdListener {
+        void onCustomEventBannerAttempted(String customEventClassName);
+        void onCustomEventBannerFailed(String customEventClassName, MoPubErrorCode errorCode);
+    }
+
     private static final String CUSTOM_EVENT_BANNER_ADAPTER_FACTORY =
             "com.mopub.mobileads.factories.CustomEventBannerAdapterFactory";
 
@@ -49,6 +54,7 @@ public class MoPubView extends FrameLayout {
     private BroadcastReceiver mScreenStateReceiver;
 
     private BannerAdListener mBannerAdListener;
+    protected BannerCustomEventAdListener mBannerCustomEventAdListener;
 
     public MoPubView(Context context) {
         this(context, null);
@@ -141,6 +147,9 @@ public class MoPubView extends FrameLayout {
     }
 
     protected boolean loadFailUrl(@NonNull final MoPubErrorCode errorCode) {
+        if (mBannerCustomEventAdListener != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerFailed(mAdViewController.getCustomEventClassName(), errorCode);
+        }
         if (mAdViewController == null) {
             return false;
         }
@@ -162,7 +171,9 @@ public class MoPubView extends FrameLayout {
         }
 
         MoPubLog.d("Loading custom event adapter.");
-
+        if (mBannerCustomEventAdListener != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerAttempted(customEventClassName);
+        }
         if (Reflection.classFound(CUSTOM_EVENT_BANNER_ADAPTER_FACTORY)) {
             try {
                 final Class<?> adapterFactoryClass = Class.forName(CUSTOM_EVENT_BANNER_ADAPTER_FACTORY);
@@ -314,6 +325,10 @@ public class MoPubView extends FrameLayout {
 
     public void setBannerAdListener(BannerAdListener listener) {
         mBannerAdListener = listener;
+    }
+
+    public void setBannerCustomEventAdListener(BannerCustomEventAdListener listener) {
+        mBannerCustomEventAdListener = listener;
     }
 
     public BannerAdListener getBannerAdListener() {
