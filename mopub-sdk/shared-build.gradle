@@ -10,7 +10,7 @@ repositories {
 }
 
 project.group = 'com.mopub'
-project.version = '5.2.0'
+project.version = '5.2.2-scopely'
 
 android {
     compileSdkVersion 26

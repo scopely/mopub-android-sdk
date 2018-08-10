@@ -79,7 +79,7 @@ public class MoPubRewardedVideoManager {
     @NonNull private final AdRequestStatusMapping mAdRequestStatus;
     @NonNull private final RewardedAdData mRewardedAdData;
     @Nullable private MoPubRewardedVideoListener mVideoListener;
-    @Nullable private MopubRewardedAnalyticsHook mAnalyticsHook;
+    @Nullable private RewardedVideoCustomEventAdListener mCustomEventAdListener;
 
 
     @NonNull private final Set<MediationSettings> mGlobalMediationSettings;
@@ -308,9 +308,9 @@ public class MoPubRewardedVideoManager {
         }
     }
 
-    public static void setAnalyticsHook(@Nullable MopubRewardedAnalyticsHook listener) {
+    public static void setAnalyticsHook(@Nullable RewardedVideoCustomEventAdListener listener) {
         if (sInstance != null) {
-            sInstance.mAnalyticsHook = listener;
+            sInstance.mCustomEventAdListener = listener;
         } else {
             logErrorNotInitialized();
         }
@@ -632,8 +632,8 @@ public class MoPubRewardedVideoManager {
             // Load custom event
             MoPubLog.d(String.format(Locale.US,
                     "Loading custom event with class name %s", customEventClassName));
-            if(sInstance.mAnalyticsHook != null) {
-                sInstance.mAnalyticsHook.onLoadCustomEvent(customEvent.getClass(), adUnitId, localExtras, adResponse.getServerExtras());
+            if(sInstance.mCustomEventAdListener != null) {
+                sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttempted(customEvent.getClass().getSimpleName());
             }
             customEvent.loadCustomEvent(mainActivity, localExtras, serverExtras);
 
@@ -737,10 +737,6 @@ public class MoPubRewardedVideoManager {
      */
     public static <T extends CustomEventRewardedAd>
     void onRewardedVideoLoadSuccess(@NonNull final Class<T> customEventClass, @NonNull final String thirdPartyId) {
-        if(sInstance.mAnalyticsHook != null) {
-            sInstance.mAnalyticsHook.onRewardedVideoLoadSuccess(customEventClass, thirdPartyId, sInstance.mRewardedAdData
-                    .getMoPubIdsForAdNetwork(customEventClass, thirdPartyId));
-        }
         postToInstance(new ForEachMoPubIdRunnable(customEventClass, thirdPartyId) {
             @Override
             protected void forEach(@NonNull final String moPubId) {
@@ -754,9 +750,8 @@ public class MoPubRewardedVideoManager {
 
     public static <T extends CustomEventRewardedAd>
     void onRewardedVideoLoadFailure(@NonNull final Class<T> customEventClass, final String thirdPartyId, final MoPubErrorCode errorCode) {
-        if(sInstance.mAnalyticsHook != null) {
-            sInstance.mAnalyticsHook.onRewardedVideoLoadFailure(customEventClass, thirdPartyId, errorCode, sInstance.mRewardedAdData
-                    .getMoPubIdsForAdNetwork(customEventClass, thirdPartyId));
+        if(sInstance.mCustomEventAdListener != null) {
+            sInstance.mCustomEventAdListener.onCustomEventRewardedVideoFailed(customEventClass.getSimpleName());
         }
         postToInstance(new ForEachMoPubIdRunnable(customEventClass, thirdPartyId) {
             @Override
