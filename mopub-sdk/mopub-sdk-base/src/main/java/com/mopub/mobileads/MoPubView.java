@@ -37,8 +37,9 @@ public class MoPubView extends FrameLayout {
     }
 
     public interface BannerCustomEventAdListener {
-        void onCustomEventBannerAttempted(String customEventClassName);
-        void onCustomEventBannerFailed(String customEventClassName, MoPubErrorCode errorCode);
+        void onCustomEventBannerAttempted(MoPubView banner, String customEventClassName);
+        void onCustomEventBannerAttemptSucceeded(MoPubView banner, String creativeId);
+        void onCustomEventBannerFailed(MoPubView banner, MoPubErrorCode errorCode);
     }
 
     private static final String CUSTOM_EVENT_BANNER_ADAPTER_FACTORY =
@@ -148,7 +149,7 @@ public class MoPubView extends FrameLayout {
 
     protected boolean loadFailUrl(@NonNull final MoPubErrorCode errorCode) {
         if (mBannerCustomEventAdListener != null) {
-            mBannerCustomEventAdListener.onCustomEventBannerFailed(mAdViewController.getCustomEventClassName(), errorCode);
+            mBannerCustomEventAdListener.onCustomEventBannerFailed(this, errorCode);
         }
         if (mAdViewController == null) {
             return false;
@@ -172,7 +173,7 @@ public class MoPubView extends FrameLayout {
 
         MoPubLog.d("Loading custom event adapter.");
         if (mBannerCustomEventAdListener != null) {
-            mBannerCustomEventAdListener.onCustomEventBannerAttempted(customEventClassName);
+            mBannerCustomEventAdListener.onCustomEventBannerAttempted(this, customEventClassName);
         }
         if (Reflection.classFound(CUSTOM_EVENT_BANNER_ADAPTER_FACTORY)) {
             try {
@@ -236,6 +237,9 @@ public class MoPubView extends FrameLayout {
 
         if (mBannerAdListener != null) {
             mBannerAdListener.onBannerLoaded(this);
+        }
+        if (mBannerCustomEventAdListener != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerAttemptSucceeded(this, mAdViewController.getAdReport().getDspCreativeId());
         }
     }
 
@@ -312,11 +316,6 @@ public class MoPubView extends FrameLayout {
 
     public int getAdHeight() {
         return (mAdViewController != null) ? mAdViewController.getAdHeight() : 0;
-    }
-
-    @Nullable
-    public AdReport getAdReport() {
-        return mAdViewController != null ? mAdViewController.getAdReport() : null;
     }
 
     public Activity getActivity() {
