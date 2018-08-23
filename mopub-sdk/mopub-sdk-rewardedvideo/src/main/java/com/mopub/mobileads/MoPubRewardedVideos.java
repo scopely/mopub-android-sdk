@@ -84,7 +84,7 @@ public class MoPubRewardedVideos {
     }
 
     @ReflectionTarget
-    public static void setRewardedAnalyticsHook(@Nullable MopubRewardedAnalyticsHook analyticsHook) {
+    public static void setRewardedVideoCustomEventAdListener(@Nullable RewardedVideoCustomEventAdListener analyticsHook) {
         MoPubRewardedVideoManager.setAnalyticsHook(analyticsHook);
     }
 
