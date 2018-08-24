@@ -634,7 +634,7 @@ public class MoPubRewardedVideoManager {
                     "Loading custom event with class name %s", customEventClassName));
             if(sInstance.mCustomEventAdListener != null) {
                 sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttempted(adUnitId,
-                        customEvent.getClass().getSimpleName());
+                        customEventClassName);
             }
             customEvent.loadCustomEvent(mainActivity, localExtras, serverExtras);
 
@@ -742,12 +742,12 @@ public class MoPubRewardedVideoManager {
             @Override
             protected void forEach(@NonNull final String moPubId) {
                 sInstance.cancelTimeouts(moPubId);
-                if (sInstance.mVideoListener != null) {
-                    sInstance.mVideoListener.onRewardedVideoLoadSuccess(moPubId);
-                }
                 if (sInstance.mCustomEventAdListener != null) {
                     sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttemptSucceeded(
                             moPubId, sInstance.mAdRequestStatus.getDspCreativeIdString(moPubId));
+                }
+                if (sInstance.mVideoListener != null) {
+                    sInstance.mVideoListener.onRewardedVideoLoadSuccess(moPubId);
                 }
             }
         });

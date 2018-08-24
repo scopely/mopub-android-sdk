@@ -235,11 +235,12 @@ public class MoPubView extends FrameLayout {
     protected void adLoaded() {
         MoPubLog.d("adLoaded");
 
+        if (mBannerCustomEventAdListener != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerAttemptSucceeded(this,
+                    mAdViewController.getAdReport().getDspCreativeId());
+        }
         if (mBannerAdListener != null) {
             mBannerAdListener.onBannerLoaded(this);
-        }
-        if (mBannerCustomEventAdListener != null) {
-            mBannerCustomEventAdListener.onCustomEventBannerAttemptSucceeded(this, mAdViewController.getAdReport().getDspCreativeId());
         }
     }
 
