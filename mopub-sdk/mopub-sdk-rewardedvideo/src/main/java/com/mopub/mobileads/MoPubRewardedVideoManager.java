@@ -633,7 +633,8 @@ public class MoPubRewardedVideoManager {
             MoPubLog.d(String.format(Locale.US,
                     "Loading custom event with class name %s", customEventClassName));
             if(sInstance.mCustomEventAdListener != null) {
-                sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttempted(customEvent.getClass().getSimpleName());
+                sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttempted(adUnitId,
+                        customEventClassName);
             }
             customEvent.loadCustomEvent(mainActivity, localExtras, serverExtras);
 
@@ -741,6 +742,10 @@ public class MoPubRewardedVideoManager {
             @Override
             protected void forEach(@NonNull final String moPubId) {
                 sInstance.cancelTimeouts(moPubId);
+                if (sInstance.mCustomEventAdListener != null) {
+                    sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttemptSucceeded(
+                            moPubId, sInstance.mAdRequestStatus.getDspCreativeIdString(moPubId));
+                }
                 if (sInstance.mVideoListener != null) {
                     sInstance.mVideoListener.onRewardedVideoLoadSuccess(moPubId);
                 }
@@ -750,14 +755,14 @@ public class MoPubRewardedVideoManager {
 
     public static <T extends CustomEventRewardedAd>
     void onRewardedVideoLoadFailure(@NonNull final Class<T> customEventClass, final String thirdPartyId, final MoPubErrorCode errorCode) {
-        if(sInstance.mCustomEventAdListener != null) {
-            sInstance.mCustomEventAdListener.onCustomEventRewardedVideoFailed(customEventClass.getSimpleName());
-        }
         postToInstance(new ForEachMoPubIdRunnable(customEventClass, thirdPartyId) {
             @Override
             protected void forEach(@NonNull final String moPubId) {
-                   sInstance.cancelTimeouts(moPubId);
-                   sInstance.failover(moPubId, errorCode);
+                sInstance.cancelTimeouts(moPubId);
+                sInstance.failover(moPubId, errorCode);
+                if(sInstance.mCustomEventAdListener != null) {
+                    sInstance.mCustomEventAdListener.onCustomEventRewardedVideoFailed(moPubId, errorCode);
+                }
             }
         });
     }
