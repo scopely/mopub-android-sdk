@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common;
 
 import android.app.Activity;
@@ -18,16 +22,11 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import com.mopub.common.event.Event;
-import com.mopub.common.event.MoPubEvents;
 import com.mopub.mobileads.BaseWebView;
 import com.mopub.mobileads.util.WebViews;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static com.mopub.common.event.BaseEvent.Category;
-import static com.mopub.common.event.BaseEvent.Name;
-import static com.mopub.common.event.BaseEvent.SamplingRate;
 import static com.mopub.common.util.Drawables.BACKGROUND;
 import static com.mopub.common.util.Drawables.CLOSE;
 import static com.mopub.common.util.Drawables.REFRESH;
@@ -45,9 +44,6 @@ public class MoPubBrowser extends Activity {
     private ImageButton mForwardButton;
     private ImageButton mRefreshButton;
     private ImageButton mCloseButton;
-
-    private DoubleTimeTracker dwellTimeTracker;
-    private String mDspCreativeId;
 
     private boolean mProgressBarAvailable;
 
@@ -89,8 +85,6 @@ public class MoPubBrowser extends Activity {
 
         setContentView(getMoPubBrowserView());
 
-        dwellTimeTracker = new DoubleTimeTracker();
-
         initializeWebView();
         initializeButtons();
         enableCookies();
@@ -109,8 +103,6 @@ public class MoPubBrowser extends Activity {
         webSettings.setSupportZoom(true);
         webSettings.setBuiltInZoomControls(true);
         webSettings.setUseWideViewPort(true);
-
-        mDspCreativeId = getIntent().getStringExtra(DSP_CREATIVE_ID);
 
         mWebView.loadUrl(getIntent().getStringExtra(DESTINATION_URL_KEY));
 
@@ -162,8 +154,6 @@ public class MoPubBrowser extends Activity {
         CookieSyncManager.getInstance().stopSync();
         mWebView.setWebChromeClient(null);
         WebViews.onPause(mWebView, isFinishing());
-        // Pause dwell time counting.
-        dwellTimeTracker.pause();
     }
 
     @Override
@@ -185,8 +175,6 @@ public class MoPubBrowser extends Activity {
         });
 
         mWebView.onResume();
-
-        dwellTimeTracker.start();
     }
 
     @Override
@@ -203,13 +191,6 @@ public class MoPubBrowser extends Activity {
         super.onDestroy();
         mWebView.destroy();
         mWebView = null;
-        // Log dwell time value.
-        MoPubEvents.log(new Event.Builder(Name.AD_DWELL_TIME,
-                Category.AD_INTERACTIONS,
-                SamplingRate.AD_INTERACTIONS.getSamplingRate())
-                .withDspCreativeId(mDspCreativeId)
-                .withPerformanceDurationMs(dwellTimeTracker.getInterval())
-                .build());
     }
 
     @SuppressWarnings("ResourceType") // Using XML resources causes issues in Unity

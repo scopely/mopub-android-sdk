@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads;
 
 import android.content.Context;
@@ -46,6 +50,7 @@ public class RewardedVideoCompletionRequestHandler implements
     @NonNull private final String mUrl;
     @NonNull private final Handler mHandler;
     @NonNull private final RequestQueue mRequestQueue;
+    @NonNull private final Context mContext;
     private int mRetryCount;
     private volatile boolean mShouldStop;
 
@@ -79,6 +84,7 @@ public class RewardedVideoCompletionRequestHandler implements
         mRetryCount = 0;
         mHandler = handler;
         mRequestQueue = Networking.getRequestQueue(context);
+        mContext = context.getApplicationContext();
     }
 
     void makeRewardedVideoCompletionRequest() {
@@ -89,7 +95,7 @@ public class RewardedVideoCompletionRequestHandler implements
         }
 
         final RewardedVideoCompletionRequest rewardedVideoCompletionRequest =
-                new RewardedVideoCompletionRequest(mUrl,
+                new RewardedVideoCompletionRequest(mContext, mUrl,
                         new DefaultRetryPolicy(getTimeout(mRetryCount) - REQUEST_TIMEOUT_DELAY,
                                 0, 0f), this);
         rewardedVideoCompletionRequest.setTag(mUrl);

@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mraid;
 
 import android.Manifest;
@@ -7,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
 import android.os.Environment;
 import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
@@ -16,11 +21,13 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 
 import com.mopub.common.test.support.SdkTestRunner;
+import com.mopub.common.util.Drawables;
+import com.mopub.common.util.ResponseHeader;
 import com.mopub.common.util.test.support.ShadowAsyncTasks;
 import com.mopub.common.util.test.support.ShadowMoPubHttpUrlConnection;
+import com.mopub.common.util.test.support.TestDrawables;
 import com.mopub.mobileads.BuildConfig;
 import com.mopub.mobileads.test.support.FileUtils;
-import com.mopub.mobileads.test.support.TestHttpResponseWithHeaders;
 import com.mopub.mraid.MraidNativeCommandHandler.DownloadImageAsyncTask;
 import com.mopub.mraid.MraidNativeCommandHandler.DownloadImageAsyncTask.DownloadImageAsyncTaskListener;
 import com.mopub.mraid.MraidNativeCommandHandler.MraidCommandFailureListener;
@@ -44,6 +51,7 @@ import org.robolectric.shadows.ShadowEnvironment;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowToast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +62,6 @@ import static android.content.DialogInterface.BUTTON_NEGATIVE;
 import static android.content.DialogInterface.BUTTON_POSITIVE;
 import static android.os.Environment.MEDIA_MOUNTED;
 import static com.mopub.mraid.MraidNativeCommandHandler.ANDROID_CALENDAR_CONTENT_TYPE;
-import static com.mopub.mraid.MraidNativeCommandHandler.MIME_TYPE_HEADER;
 import static java.io.File.separator;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -63,7 +70,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.stub;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,14 +92,16 @@ public class MraidNativeCommandHandlerTest {
     private File expectedFile;
     private File pictureDirectory;
     private File fileWithoutExtension;
-    private TestHttpResponseWithHeaders response;
 
     @Before
     public void setUp() throws Exception {
         subject = new MraidNativeCommandHandler();
         context = Robolectric.buildActivity(Activity.class).create().get();
 
-        FileUtils.copyFile("etc/expectedFile.jpg", "/tmp/expectedFile.jpg");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        TestDrawables.EXPECTED_FILE.getBitmap().compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        FileUtils.writeBytesToFile(baos.toByteArray(), "/tmp/expectedFile.jpg");
+
         expectedFile = new File(Environment.getExternalStorageDirectory(), "Pictures" + separator + "expectedFile.jpg");
         pictureDirectory = new File(Environment.getExternalStorageDirectory(), "Pictures");
         fileWithoutExtension = new File(pictureDirectory, "file");
@@ -176,7 +184,7 @@ public class MraidNativeCommandHandlerTest {
     @Test
     public void downloadImageAsyncTask_doInBackground_shouldReturnTrueAndCreateFile() throws Exception {
         ShadowMoPubHttpUrlConnection.addPendingResponse(200, FAKE_IMAGE_DATA,
-                createHeaders(new Pair<String, String>("Content-Type", "image/jpg")));
+                createHeaders(new Pair<String, String>("content-type", "image/jpg")));
 
         final DownloadImageAsyncTask downloadImageAsyncTask =
                 new DownloadImageAsyncTask(context, mockDownloadImageAsyncTaskListener);
@@ -193,8 +201,8 @@ public class MraidNativeCommandHandlerTest {
     public void downloadImageAsyncTask_doInBackground_withLocationHeaderSet_shouldUseLocationHeaderAsFilename() throws Exception {
         ShadowMoPubHttpUrlConnection.addPendingResponse(200, FAKE_IMAGE_DATA,
                 createHeaders(
-                        new Pair<String, String>("Content-Type", "image/jpg"),
-                        new Pair<String, String>("Location", "https://www.newhost.com/images/blah/file.wow")
+                        new Pair<>("content-type", "image/jpg"),
+                        new Pair<>("location", "https://www.newhost.com/images/blah/file.wow")
                 )
         );
 
@@ -227,7 +235,7 @@ public class MraidNativeCommandHandlerTest {
     @Test
     public void downloadImageAsyncTask_doInBackground_withNullArray_shouldReturnFalseAndNotCreateFile() throws Exception {
         ShadowMoPubHttpUrlConnection.addPendingResponse(200, FAKE_IMAGE_DATA,
-                createHeaders(new Pair<String, String>("Content-Type", "image/jpg")));
+                createHeaders(new Pair<String, String>("content-type", "image/jpg")));
 
         final DownloadImageAsyncTask downloadImageAsyncTask =
                 new DownloadImageAsyncTask(context, mockDownloadImageAsyncTaskListener);
@@ -242,7 +250,7 @@ public class MraidNativeCommandHandlerTest {
     @Test
     public void downloadImageAsyncTask_doInBackground_withEmptyArray_shouldReturnFalseAndNotCreateFile() throws Exception {
         ShadowMoPubHttpUrlConnection.addPendingResponse(200, FAKE_IMAGE_DATA,
-                createHeaders(new Pair<String, String>("Content-Type", "image/jpg")));
+                createHeaders(new Pair<String, String>("content-type", "image/jpg")));
 
         final DownloadImageAsyncTask downloadImageAsyncTask =
                 new DownloadImageAsyncTask(context, mockDownloadImageAsyncTaskListener);
@@ -257,7 +265,7 @@ public class MraidNativeCommandHandlerTest {
     @Test
     public void downloadImageAsyncTask_doInBackground_withArrayContainingNull_shouldReturnFalseAndNotCreateFile() throws Exception {
         ShadowMoPubHttpUrlConnection.addPendingResponse(200, FAKE_IMAGE_DATA,
-                createHeaders(new Pair<String, String>("Content-Type", "image/jpg")));
+                createHeaders(new Pair<String, String>("content-type", "image/jpg")));
 
         final DownloadImageAsyncTask downloadImageAsyncTask =
                 new DownloadImageAsyncTask(context, mockDownloadImageAsyncTaskListener);
@@ -711,7 +719,7 @@ public class MraidNativeCommandHandlerTest {
         List<ResolveInfo> resolveInfos = new ArrayList<ResolveInfo>();
         resolveInfos.add(new ResolveInfo());
 
-        stub(context.getPackageManager()).toReturn(packageManager);
+        when(context.getPackageManager()).thenReturn(packageManager);
 
         BaseMatcher intentWithSpecificData = new BaseMatcher() {
             // check that the specific intent has the special data, i.e. "tel:", or a component name, or string type, based on a particular data
@@ -755,7 +763,7 @@ public class MraidNativeCommandHandlerTest {
         };
 
         // It is okay to query with specific intent or nothing, because by default, none of the query would normally any resolveInfo anyways
-        stub(packageManager.queryIntentActivities((Intent) argThat(intentWithSpecificData), eq(0))).toReturn(resolveInfos);
+        when(packageManager.queryIntentActivities((Intent) argThat(intentWithSpecificData), eq(0))).thenReturn(resolveInfos);
         return context;
     }
 
@@ -779,7 +787,7 @@ public class MraidNativeCommandHandlerTest {
         expectedFile = new File(pictureDirectory, expectedFileName);
 
         ShadowMoPubHttpUrlConnection.addPendingResponse(200, FAKE_IMAGE_DATA,
-                createHeaders(new Pair<String, String>(MIME_TYPE_HEADER, contentType)));
+                createHeaders(new Pair<String, String>(ResponseHeader.CONTENT_TYPE.getKey(), contentType)));
 
         final DownloadImageAsyncTask downloadImageAsyncTask =
                 new DownloadImageAsyncTask(context, mockDownloadImageAsyncTaskListener);

@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads;
 
 import android.app.Activity;
@@ -15,6 +19,7 @@ import android.widget.FrameLayout;
 
 import com.mopub.common.AdFormat;
 import com.mopub.common.AdReport;
+import com.mopub.common.MoPub;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.ManifestUtils;
 import com.mopub.common.util.Reflection;
@@ -35,6 +40,11 @@ public class MoPubView extends FrameLayout {
         public void onBannerCollapsed(MoPubView banner);
     }
 
+    public interface BannerCustomEventAdListener {
+        void onCustomEventBannerAttempted(String customEventClassName);
+        void onCustomEventBannerFailed(String customEventClassName, MoPubErrorCode errorCode);
+    }
+
     private static final String CUSTOM_EVENT_BANNER_ADAPTER_FACTORY =
             "com.mopub.mobileads.factories.CustomEventBannerAdapterFactory";
 
@@ -48,6 +58,7 @@ public class MoPubView extends FrameLayout {
     private BroadcastReceiver mScreenStateReceiver;
 
     private BannerAdListener mBannerAdListener;
+    protected BannerCustomEventAdListener mBannerCustomEventAdListener;
 
     public MoPubView(Context context) {
         this(context, null);
@@ -135,11 +146,18 @@ public class MoPubView extends FrameLayout {
         }
     }
 
-    Integer getAdTimeoutDelay() {
-        return (mAdViewController != null) ? mAdViewController.getAdTimeoutDelay() : null;
+    @NonNull
+    Integer getAdTimeoutDelay(int defaultValue) {
+        if (mAdViewController == null) {
+            return defaultValue;
+        }
+        return mAdViewController.getAdTimeoutDelay(defaultValue);
     }
 
     protected boolean loadFailUrl(@NonNull final MoPubErrorCode errorCode) {
+        if (mBannerCustomEventAdListener != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerFailed(mAdViewController.getCustomEventClassName(), errorCode);
+        }
         if (mAdViewController == null) {
             return false;
         }
@@ -161,7 +179,9 @@ public class MoPubView extends FrameLayout {
         }
 
         MoPubLog.d("Loading custom event adapter.");
-
+        if (mBannerCustomEventAdListener != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerAttempted(customEventClassName);
+        }
         if (Reflection.classFound(CUSTOM_EVENT_BANNER_ADAPTER_FACTORY)) {
             try {
                 final Class<?> adapterFactoryClass = Class.forName(CUSTOM_EVENT_BANNER_ADAPTER_FACTORY);
@@ -251,8 +271,10 @@ public class MoPubView extends FrameLayout {
         }
     }
 
-    protected void nativeAdLoaded() {
-        if (mAdViewController != null) mAdViewController.scheduleRefreshTimerIfEnabled();
+    protected void creativeDownloaded() {
+        if (mAdViewController != null) {
+            mAdViewController.creativeDownloadSuccess();
+        }
         adLoaded();
     }
 
@@ -271,15 +293,27 @@ public class MoPubView extends FrameLayout {
     }
 
     public String getKeywords() {
-        return (mAdViewController != null) ? mAdViewController.getKeywords() : null;
+        return (mAdViewController != null) ? mAdViewController.getKeywords(): null;
+    }
+
+    public void setUserDataKeywords(String userDataKeywords) {
+        if (mAdViewController != null && MoPub.canCollectPersonalInformation()) {
+            mAdViewController.setUserDataKeywords(userDataKeywords);
+        }
+    }
+
+    public String getUserDataKeywords() {
+        return (mAdViewController != null && MoPub.canCollectPersonalInformation()) ? mAdViewController.getUserDataKeywords() : null;
     }
 
     public void setLocation(Location location) {
-        if (mAdViewController != null) mAdViewController.setLocation(location);
+        if (mAdViewController != null && MoPub.canCollectPersonalInformation()) {
+            mAdViewController.setLocation(location);
+        }
     }
 
     public Location getLocation() {
-        return (mAdViewController != null) ? mAdViewController.getLocation() : null;
+        return (mAdViewController != null && MoPub.canCollectPersonalInformation()) ? mAdViewController.getLocation() : null;
     }
 
     public int getAdWidth() {
@@ -303,6 +337,10 @@ public class MoPubView extends FrameLayout {
         mBannerAdListener = listener;
     }
 
+    public void setBannerCustomEventAdListener(BannerCustomEventAdListener listener) {
+        mBannerCustomEventAdListener = listener;
+    }
+
     public BannerAdListener getBannerAdListener() {
         return mBannerAdListener;
     }
@@ -321,6 +359,30 @@ public class MoPubView extends FrameLayout {
     public void setAutorefreshEnabled(boolean enabled) {
         if (mAdViewController != null) {
             mAdViewController.setShouldAllowAutoRefresh(enabled);
+        }
+    }
+
+    void pauseAutorefresh() {
+        if (mAdViewController != null) {
+            mAdViewController.pauseRefresh();
+        }
+    }
+
+    void resumeAutorefresh() {
+        if (mAdViewController != null) {
+            mAdViewController.resumeRefresh();
+        }
+    }
+
+    void expand() {
+        if (mAdViewController != null) {
+            mAdViewController.expand();
+        }
+    }
+
+    void collapse() {
+        if (mAdViewController != null) {
+            mAdViewController.collapse();
         }
     }
 

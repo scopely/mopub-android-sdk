@@ -1,15 +1,22 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.network;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.mopub.common.MoPub.BrowserAgent;
-import com.mopub.common.event.EventDetails;
+import com.mopub.common.Preconditions;
 import com.mopub.common.util.DateAndTime;
 
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -40,13 +47,19 @@ public class AdResponse implements Serializable {
     private final boolean mShouldRewardOnClick;
 
     @Nullable
-    private final String mRedirectUrl;
-    @Nullable
     private final String mClickTrackingUrl;
-    @Nullable
-    private final String mImpressionTrackingUrl;
+    @NonNull
+    private final List<String> mImpressionTrackingUrls;
     @Nullable
     private final String mFailoverUrl;
+    @Nullable
+    private final String mBeforeLoadUrl;
+    @NonNull
+    private final List<String> mAfterLoadUrls;
+    @NonNull
+    private final List<String> mAfterLoadSuccessUrls;
+    @NonNull
+    private final List<String> mAfterLoadFailUrls;
     @Nullable
     private final String mRequestId;
 
@@ -61,15 +74,10 @@ public class AdResponse implements Serializable {
     @Nullable
     private final String mDspCreativeId;
 
-    private final boolean mScrollable;
-
     @Nullable
     private final String mResponseBody;
     @Nullable
     private final JSONObject mJsonBody;
-
-    @Nullable
-    private final EventDetails mEventDetails;
 
     @Nullable
     private final String mCustomEventClassName;
@@ -94,22 +102,23 @@ public class AdResponse implements Serializable {
         mRewardedDuration = builder.rewardedDuration;
         mShouldRewardOnClick = builder.shouldRewardOnClick;
 
-        mRedirectUrl = builder.redirectUrl;
         mClickTrackingUrl = builder.clickTrackingUrl;
-        mImpressionTrackingUrl = builder.impressionTrackingUrl;
+        mImpressionTrackingUrls = builder.impressionTrackingUrls;
         mFailoverUrl = builder.failoverUrl;
+        mBeforeLoadUrl = builder.beforeLoadUrl;
+        mAfterLoadUrls = builder.afterLoadUrls;
+        mAfterLoadSuccessUrls = builder.afterLoadSuccessUrls;
+        mAfterLoadFailUrls = builder.afterLoadFailUrls;
         mRequestId = builder.requestId;
         mWidth = builder.width;
         mHeight = builder.height;
         mAdTimeoutDelayMillis = builder.adTimeoutDelayMillis;
         mRefreshTimeMillis = builder.refreshTimeMillis;
         mDspCreativeId = builder.dspCreativeId;
-        mScrollable = builder.scrollable;
         mResponseBody = builder.responseBody;
         mJsonBody = builder.jsonBody;
-        mEventDetails = builder.eventDetails;
         mCustomEventClassName = builder.customEventClassName;
-        mBrowserAgent = builder.mBrowserAgent;
+        mBrowserAgent = builder.browserAgent;
         mServerExtras = builder.serverExtras;
         mTimestamp = DateAndTime.now().getTime();
     }
@@ -121,11 +130,6 @@ public class AdResponse implements Serializable {
     @Nullable
     public JSONObject getJsonBody() {
         return mJsonBody;
-    }
-
-    @Nullable
-    public EventDetails getEventDetails() {
-        return mEventDetails;
     }
 
     @Nullable
@@ -183,32 +187,44 @@ public class AdResponse implements Serializable {
     }
 
     @Nullable
-    public String getRedirectUrl() {
-        return mRedirectUrl;
-    }
-
-    @Nullable
     public String getClickTrackingUrl() {
         return mClickTrackingUrl;
     }
 
-    @Nullable
-    public String getImpressionTrackingUrl() {
-        return mImpressionTrackingUrl;
+    @NonNull
+    public List<String> getImpressionTrackingUrls() {
+        return mImpressionTrackingUrls;
     }
 
+    @Deprecated
     @Nullable
     public String getFailoverUrl() {
         return mFailoverUrl;
     }
 
     @Nullable
-    public String getRequestId() {
-        return mRequestId;
+    public String getBeforeLoadUrl() {
+        return mBeforeLoadUrl;
     }
 
-    public boolean isScrollable() {
-        return mScrollable;
+    @NonNull
+    public List<String> getAfterLoadUrls() {
+        return mAfterLoadUrls;
+    }
+
+    @NonNull
+    public List<String> getAfterLoadSuccessUrls() {
+        return mAfterLoadSuccessUrls;
+    }
+
+    @NonNull
+    public List<String> getAfterLoadFailUrls() {
+        return mAfterLoadFailUrls;
+    }
+
+    @Nullable
+    public String getRequestId() {
+        return mRequestId;
     }
 
     @Nullable
@@ -221,8 +237,11 @@ public class AdResponse implements Serializable {
         return mHeight;
     }
 
-    @Nullable
-    public Integer getAdTimeoutMillis() {
+    @NonNull
+    public Integer getAdTimeoutMillis(int defaultValue) {
+        if (mAdTimeoutDelayMillis == null || mAdTimeoutDelayMillis < 1000) {
+            return defaultValue;
+        }
         return mAdTimeoutDelayMillis;
     }
 
@@ -247,7 +266,7 @@ public class AdResponse implements Serializable {
     @NonNull
     public Map<String, String> getServerExtras() {
         // Strings are immutable, so this works as a "deep" copy.
-        return new TreeMap<String, String>(mServerExtras);
+        return new TreeMap<>(mServerExtras);
     }
 
     public long getTimestamp() {
@@ -264,18 +283,19 @@ public class AdResponse implements Serializable {
                 .setRewardedVideoCompletionUrl(mRewardedVideoCompletionUrl)
                 .setRewardedDuration(mRewardedDuration)
                 .setShouldRewardOnClick(mShouldRewardOnClick)
-                .setRedirectUrl(mRedirectUrl)
                 .setClickTrackingUrl(mClickTrackingUrl)
-                .setImpressionTrackingUrl(mImpressionTrackingUrl)
+                .setImpressionTrackingUrls(mImpressionTrackingUrls)
                 .setFailoverUrl(mFailoverUrl)
+                .setBeforeLoadUrl(mBeforeLoadUrl)
+                .setAfterLoadUrls(mAfterLoadUrls)
+                .setAfterLoadSuccessUrls(mAfterLoadSuccessUrls)
+                .setAfterLoadFailUrls(mAfterLoadFailUrls)
                 .setDimensions(mWidth, mHeight)
                 .setAdTimeoutDelayMilliseconds(mAdTimeoutDelayMillis)
                 .setRefreshTimeMilliseconds(mRefreshTimeMillis)
                 .setDspCreativeId(mDspCreativeId)
-                .setScrollable(mScrollable)
                 .setResponseBody(mResponseBody)
                 .setJsonBody(mJsonBody)
-                .setEventDetails(mEventDetails)
                 .setCustomEventClassName(mCustomEventClassName)
                 .setBrowserAgent(mBrowserAgent)
                 .setServerExtras(mServerExtras);
@@ -294,10 +314,13 @@ public class AdResponse implements Serializable {
         private Integer rewardedDuration;
         private boolean shouldRewardOnClick;
 
-        private String redirectUrl;
         private String clickTrackingUrl;
-        private String impressionTrackingUrl;
+        private List<String> impressionTrackingUrls = new ArrayList<>();
         private String failoverUrl;
+        private String beforeLoadUrl;
+        private List<String> afterLoadUrls = new ArrayList<>();
+        private List<String> afterLoadSuccessUrls = new ArrayList<>();
+        private List<String> afterLoadFailUrls = new ArrayList<>();
         private String requestId;
 
         private Integer width;
@@ -306,16 +329,13 @@ public class AdResponse implements Serializable {
         private Integer refreshTimeMillis;
         private String dspCreativeId;
 
-        private boolean scrollable = false;
-
         private String responseBody;
         private JSONObject jsonBody;
 
-        private EventDetails eventDetails;
-
         private String customEventClassName;
-        private BrowserAgent mBrowserAgent;
-        private Map<String, String> serverExtras = new TreeMap<String, String>();
+        private BrowserAgent browserAgent;
+
+        private Map<String, String> serverExtras = new TreeMap<>();
 
         public Builder setAdType(@Nullable final String adType) {
             this.adType = adType;
@@ -370,23 +390,43 @@ public class AdResponse implements Serializable {
             return this;
         }
 
-        public Builder setRedirectUrl(@Nullable final String redirectUrl) {
-            this.redirectUrl = redirectUrl;
-            return this;
-        }
-
         public Builder setClickTrackingUrl(@Nullable final String clickTrackingUrl) {
             this.clickTrackingUrl = clickTrackingUrl;
             return this;
         }
 
-        public Builder setImpressionTrackingUrl(@Nullable final String impressionTrackingUrl) {
-            this.impressionTrackingUrl = impressionTrackingUrl;
+        public Builder setImpressionTrackingUrls(@NonNull final List<String> impressionTrackingUrls) {
+            Preconditions.checkNotNull(impressionTrackingUrls);
+
+            this.impressionTrackingUrls = impressionTrackingUrls;
             return this;
         }
 
         public Builder setFailoverUrl(@Nullable final String failoverUrl) {
             this.failoverUrl = failoverUrl;
+            return this;
+        }
+
+        public Builder setBeforeLoadUrl(@Nullable final String beforeLoadUrl) {
+            this.beforeLoadUrl = beforeLoadUrl;
+            return this;
+        }
+
+        public Builder setAfterLoadUrls(@NonNull final List<String> afterLoadUrls) {
+            Preconditions.checkNotNull(afterLoadUrls);
+            this.afterLoadUrls = afterLoadUrls;
+            return this;
+        }
+
+        public Builder setAfterLoadSuccessUrls(@NonNull final List<String> afterLoadSuccessUrls) {
+            Preconditions.checkNotNull(afterLoadSuccessUrls);
+            this.afterLoadSuccessUrls = afterLoadSuccessUrls;
+            return this;
+        }
+
+        public Builder setAfterLoadFailUrls(@NonNull final List<String> afterLoadFailUrls) {
+            Preconditions.checkNotNull(afterLoadFailUrls);
+            this.afterLoadFailUrls = afterLoadFailUrls;
             return this;
         }
 
@@ -412,11 +452,6 @@ public class AdResponse implements Serializable {
             return this;
         }
 
-        public Builder setScrollable(@Nullable final Boolean scrollable) {
-            this.scrollable = scrollable == null ? this.scrollable : scrollable;
-            return this;
-        }
-
         public Builder setDspCreativeId(@Nullable final String dspCreativeId) {
             this.dspCreativeId = dspCreativeId;
             return this;
@@ -432,26 +467,21 @@ public class AdResponse implements Serializable {
             return this;
         }
 
-        public Builder setEventDetails(@Nullable final EventDetails eventDetails) {
-            this.eventDetails = eventDetails;
-            return this;
-        }
-
         public Builder setCustomEventClassName(@Nullable final String customEventClassName) {
             this.customEventClassName = customEventClassName;
             return this;
         }
 
         public Builder setBrowserAgent(@Nullable final BrowserAgent browserAgent) {
-            this.mBrowserAgent = browserAgent;
+            this.browserAgent = browserAgent;
             return this;
         }
 
         public Builder setServerExtras(@Nullable final Map<String, String> serverExtras) {
             if (serverExtras == null) {
-                this.serverExtras = new TreeMap<String, String>();
+                this.serverExtras = new TreeMap<>();
             } else {
-                this.serverExtras = new TreeMap<String, String>(serverExtras);
+                this.serverExtras = new TreeMap<>(serverExtras);
             }
             return this;
         }

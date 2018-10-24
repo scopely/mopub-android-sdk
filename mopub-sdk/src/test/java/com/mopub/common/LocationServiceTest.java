@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common;
 
 import android.app.Activity;
@@ -6,7 +10,9 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.SystemClock;
 
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.test.support.SdkTestRunner;
+import com.mopub.common.util.Reflection;
 import com.mopub.mobileads.BuildConfig;
 
 import org.junit.After;
@@ -22,6 +28,8 @@ import org.robolectric.shadows.ShadowLocationManager;
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 @RunWith(SdkTestRunner.class)
@@ -32,6 +40,7 @@ public class LocationServiceTest {
     private Location gpsLocation;
     private Location cachedLocation;
     private ShadowLocationManager shadowLocationManager;
+    private PersonalInfoManager mockPersonalInfoManager;
 
     @Before
     public void setUp() {
@@ -60,6 +69,7 @@ public class LocationServiceTest {
                 (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE));
         shadowLocationManager.setLastKnownLocation(LocationManager.NETWORK_PROVIDER, networkLocation);
         shadowLocationManager.setLastKnownLocation(LocationManager.GPS_PROVIDER, gpsLocation);
+        mockPersonalInfoManager = mock(PersonalInfoManager.class);
     }
 
     @After
@@ -79,8 +89,15 @@ public class LocationServiceTest {
     }
 
     @Test
-    public void getLastKnownLocation_withFinePermission_withLocationAwarenessTruncated_shouldTruncateLocationLatLon() {
+    public void getLastKnownLocation_withFinePermission_withLocationAwarenessTruncated_shouldTruncateLocationLatLon() throws  Exception{
         Shadows.shadowOf(activity).grantPermissions(ACCESS_FINE_LOCATION);
+
+        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
+        new Reflection.MethodBuilder(null, "setPersonalInfoManager")
+                .setStatic(MoPub.class)
+                .setAccessible()
+                .addParam(PersonalInfoManager.class, mockPersonalInfoManager)
+                .execute();
 
         final Location result =
                 LocationService.getLastKnownLocation(activity, 2, MoPub.LocationAwareness.TRUNCATED);
@@ -93,8 +110,14 @@ public class LocationServiceTest {
     }
 
     @Test
-    public void getLastKnownLocation_withOnlyCoarsePermission_shouldReturnNetworkLocation() {
+    public void getLastKnownLocation_withOnlyCoarsePermission_shouldReturnNetworkLocation() throws Exception {
         Shadows.shadowOf(activity).grantPermissions(ACCESS_COARSE_LOCATION);
+        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
+        new Reflection.MethodBuilder(null, "setPersonalInfoManager")
+                .setStatic(MoPub.class)
+                .setAccessible()
+                .addParam(PersonalInfoManager.class, mockPersonalInfoManager)
+                .execute();
 
         final Location result =
                 LocationService.getLastKnownLocation(activity, 10, MoPub.LocationAwareness.NORMAL);
@@ -126,8 +149,15 @@ public class LocationServiceTest {
     }
 
     @Test
-    public void getLastKnownLocation_withLocationAwarenessDisabled_shouldReturnNull() {
+    public void getLastKnownLocation_withLocationAwarenessDisabled_shouldReturnNull() throws Exception {
         Shadows.shadowOf(activity).grantPermissions(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION);
+
+        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
+        new Reflection.MethodBuilder(null, "setPersonalInfoManager")
+            .setStatic(MoPub.class)
+            .setAccessible()
+            .addParam(PersonalInfoManager.class, mockPersonalInfoManager)
+            .execute();
 
         final Location result =
                 LocationService.getLastKnownLocation(activity, 10, MoPub.LocationAwareness.DISABLED);

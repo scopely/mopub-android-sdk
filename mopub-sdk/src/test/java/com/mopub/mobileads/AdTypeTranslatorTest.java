@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads;
 
 import android.app.Activity;
@@ -8,6 +12,8 @@ import com.mopub.common.AdType;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.common.util.ResponseHeader;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,10 +21,11 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.stub;
+import static org.mockito.Mockito.when;
 
 @RunWith(SdkTestRunner.class)
 @Config(constants = BuildConfig.class)
@@ -26,7 +33,7 @@ public class AdTypeTranslatorTest {
     private String customEventName;
     private MoPubView moPubView;
     private MoPubInterstitial.MoPubInterstitialView moPubInterstitialView;
-    HashMap<String, String> headers;
+    JSONObject headers;
 
     @Before
     public void setUp() throws Exception {
@@ -34,10 +41,11 @@ public class AdTypeTranslatorTest {
         moPubInterstitialView = mock(MoPubInterstitial.MoPubInterstitialView.class);
 
         Context context = Robolectric.buildActivity(Activity.class).create().get();
-        stub(moPubView.getContext()).toReturn(context);
-        stub(moPubInterstitialView.getContext()).toReturn(context);
+        when(moPubView.getContext()).thenReturn(context);
+        when(moPubInterstitialView.getContext()).thenReturn(context);
 
-        headers = new HashMap<String, String>();
+        Map<String, String> stringHeaders = new HashMap<String, String>();
+        headers = new JSONObject(stringHeaders);
     }
 
     @Test
@@ -104,7 +112,7 @@ public class AdTypeTranslatorTest {
     }
 
     @Test
-    public void getCustomEventName_shouldBeCustomClassName() {
+    public void getCustomEventName_shouldBeCustomClassName() throws JSONException {
         headers.put(ResponseHeader.CUSTOM_EVENT_NAME.getKey(), "com.example.CustomClass");
         customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, AdType.CUSTOM, null, headers);
 
@@ -112,10 +120,10 @@ public class AdTypeTranslatorTest {
     }
 
     @Test
-    public void getCustomEventName_whenNameNotInHeaders_shouldBeNull() {
+    public void getCustomEventName_whenNameNotInHeaders_shouldBeEmpty() {
         customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, AdType.CUSTOM, null, headers);
 
-        assertThat(customEventName).isNull();
+        assertThat(customEventName).isEmpty();
     }
 
     @Test

@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common.util;
 
 import android.annotation.TargetApi;
@@ -91,6 +95,22 @@ public class ManifestUtilsTest {
                 "com.mopub.mobileads.MoPubActivity",
                 "com.mopub.mobileads.MraidActivity",
                 "com.mopub.mobileads.MraidVideoPlayerActivity"
+        );
+    }
+
+    @Test
+    public void checSdkActivitiesDeclared_shouldIncludeOneActivityDeclaration() throws Exception {
+        ShadowLog.setupLogging();
+
+        ManifestUtils.checkGdprActivitiesDeclared(context);
+
+        assertLogIncludes("com.mopub.common.privacy.ConsentDialogActivity");
+        assertLogDoesntInclude(
+                "com.mopub.mobileads.MoPubActivity",
+                "com.mopub.mobileads.MraidActivity",
+                "com.mopub.mobileads.MraidVideoPlayerActivity",
+                "com.mopub.mobileads.RewardedMraidActivity",
+                "com.mopub.common.MoPubBrowser"
         );
     }
 

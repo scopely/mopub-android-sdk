@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads.factories;
 
 import com.mopub.common.AdReport;
@@ -18,11 +22,7 @@ public class CustomEventInterstitialAdapterFactory {
         return instance.internalCreate(moPubInterstitial, className, serverExtras, broadcastIdentifier, adReport);
     }
 
-    public CustomEventInterstitialAdapter internalCreate(MoPubInterstitial moPubInterstitial, String className, Map<String, String> serverExtras, long broadcastIdentifier, AdReport adReport) {
+    protected CustomEventInterstitialAdapter internalCreate(MoPubInterstitial moPubInterstitial, String className, Map<String, String> serverExtras, long broadcastIdentifier, AdReport adReport) {
         return new CustomEventInterstitialAdapter(moPubInterstitial, className, serverExtras, broadcastIdentifier, adReport);
-    }
-
-    public static CustomEventInterstitialAdapterFactory getInstance() {
-        return instance;
     }
 }

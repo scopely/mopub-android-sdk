@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.simpleadsdemo;
 
 import android.os.Bundle;
@@ -21,12 +25,12 @@ public class InterstitialDetailFragment extends Fragment implements Interstitial
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        final MoPubSampleAdUnit adConfiguration =
-                MoPubSampleAdUnit.fromBundle(getArguments());
+        final MoPubSampleAdUnit adConfiguration = MoPubSampleAdUnit.fromBundle(getArguments());
         final View view = inflater.inflate(R.layout.interstitial_detail_fragment, container, false);
         final DetailFragmentViewHolder views = DetailFragmentViewHolder.fromView(view);
         views.mKeywordsField.setText(getArguments().getString(MoPubListFragment.KEYWORDS_KEY, ""));
-        hideSoftKeyboard(views.mKeywordsField);
+        views.mUserDataKeywordsField.setText(getArguments().getString(MoPubListFragment.USER_DATA_KEYWORDS_KEY, ""));
+        hideSoftKeyboard(views.mUserDataKeywordsField);
 
         final String adUnitId = adConfiguration.getAdUnitId();
         views.mDescriptionView.setText(adConfiguration.getDescription());
@@ -40,7 +44,9 @@ public class InterstitialDetailFragment extends Fragment implements Interstitial
                     mMoPubInterstitial.setInterstitialAdListener(InterstitialDetailFragment.this);
                 }
                 final String keywords = views.mKeywordsField.getText().toString();
+                final String userDatakeywords = views.mUserDataKeywordsField.getText().toString();
                 mMoPubInterstitial.setKeywords(keywords);
+                mMoPubInterstitial.setUserDataKeywords(userDatakeywords);
                 mMoPubInterstitial.load();
             }
         });

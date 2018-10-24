@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads;
 
 import android.app.Activity;
@@ -57,11 +61,11 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
     @NonNull private MoPubInterstitialView mInterstitialView;
     @Nullable private CustomEventInterstitialAdapter mCustomEventInterstitialAdapter;
     @Nullable private InterstitialAdListener mInterstitialAdListener;
+    @Nullable private InterstitialCustomEventAdListener mInterstitialCustomEventAdListener;
     @NonNull private Activity mActivity;
     @NonNull private Handler mHandler;
     @NonNull private final Runnable mAdExpiration;
     @NonNull private volatile InterstitialState mCurrentInterstitialState;
-    @NonNull private CustomEventInterstitialAdapterFactory mCustomEventInterstitialAdapterFactory;
 
     public interface InterstitialAdListener {
         void onInterstitialLoaded(MoPubInterstitial interstitial);
@@ -73,7 +77,6 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
     public MoPubInterstitial(@NonNull final Activity activity, @NonNull final String adUnitId) {
         mActivity = activity;
-        mCustomEventInterstitialAdapterFactory = CustomEventInterstitialAdapterFactory.getInstance();
 
         mInterstitialView = new MoPubInterstitialView(mActivity);
         mInterstitialView.setAdUnitId(adUnitId);
@@ -251,6 +254,7 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
      */
     private void setInterstitialStateDestroyed() {
         invalidateInterstitialAdapter();
+        mInterstitialAdListener = null;
         mInterstitialView.setBannerAdListener(null);
         mInterstitialView.destroy();
         mHandler.removeCallbacks(mAdExpiration);
@@ -278,8 +282,8 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         return mCurrentInterstitialState == DESTROYED;
     }
 
-    Integer getAdTimeoutDelay() {
-        return mInterstitialView.getAdTimeoutDelay();
+    Integer getAdTimeoutDelay(int defaultValue) {
+        return mInterstitialView.getAdTimeoutDelay(defaultValue);
     }
 
     @NonNull
@@ -311,6 +315,15 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         return mInterstitialView.getKeywords();
     }
 
+    public void setUserDataKeywords(@Nullable final String userDataKeywords) {
+        mInterstitialView.setUserDataKeywords(userDataKeywords);
+    }
+
+    @Nullable
+    public String getUserDataKeywords() {
+        return mInterstitialView.getUserDataKeywords();
+    }
+
     @NonNull
     public MoPubInterstitialView getInterstitialView() {
         return mInterstitialView;
@@ -334,6 +347,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         mInterstitialAdListener = listener;
     }
 
+    public void setInterstitialCustomEventAdListener(@Nullable final InterstitialCustomEventAdListener listener) {
+        mInterstitialCustomEventAdListener = listener;
+    }
+
     @Nullable
     public InterstitialAdListener getInterstitialAdListener() {
         return mInterstitialAdListener;
@@ -349,10 +366,6 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
     public void setLocalExtras(Map<String, Object> extras) {
         mInterstitialView.setLocalExtras(extras);
-    }
-
-    public void setCustomEventInterstitialAdapterFactory(@NonNull CustomEventInterstitialAdapterFactory customEventInterstitialAdapterFactory) {
-        this.mCustomEventInterstitialAdapterFactory = customEventInterstitialAdapterFactory;
     }
 
     @NonNull
@@ -373,6 +386,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
         attemptStateTransition(READY);
 
+        if (mInterstitialView.mAdViewController != null) {
+            mInterstitialView.mAdViewController.creativeDownloadSuccess();
+        }
+
         if (mInterstitialAdListener != null) {
             mInterstitialAdListener.onInterstitialLoaded(this);
         }
@@ -387,6 +404,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         if (!mInterstitialView.loadFailUrl(errorCode)) {
             attemptStateTransition(IDLE);
         }
+
+        if (mInterstitialCustomEventAdListener != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialFailed(this.getMoPubInterstitialView().getCustomEventClassName());
+        }
     }
 
     @Override
@@ -395,7 +416,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
             return;
         }
 
-        mInterstitialView.trackImpression();
+        if (mCustomEventInterstitialAdapter == null ||
+                mCustomEventInterstitialAdapter.isAutomaticImpressionAndClickTrackingEnabled()) {
+            mInterstitialView.trackImpression();
+        }
 
         if (mInterstitialAdListener != null) {
             mInterstitialAdListener.onInterstitialShown(this);
@@ -412,6 +436,18 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
         if (mInterstitialAdListener != null) {
             mInterstitialAdListener.onInterstitialClicked(this);
+        }
+    }
+
+    @Override
+    public void onCustomEventInterstitialImpression() {
+        if (isDestroyed()) {
+            return;
+        }
+
+        if (mCustomEventInterstitialAdapter != null &&
+                !mCustomEventInterstitialAdapter.isAutomaticImpressionAndClickTrackingEnabled()) {
+            mInterstitialView.trackImpression();
         }
     }
 
@@ -462,8 +498,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
             }
 
             MoPubLog.d("Loading custom event interstitial adapter.");
-
-            mCustomEventInterstitialAdapter = mCustomEventInterstitialAdapterFactory.internalCreate(
+            if (mInterstitialCustomEventAdListener != null) {
+                mInterstitialCustomEventAdListener.onCustomEventInterstitialAttempted(customEventClassName);
+            }
+            mCustomEventInterstitialAdapter = CustomEventInterstitialAdapterFactory.create(
                     MoPubInterstitial.this,
                     customEventClassName,
                     serverExtras,

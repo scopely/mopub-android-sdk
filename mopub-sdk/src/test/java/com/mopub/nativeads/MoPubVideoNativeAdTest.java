@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.nativeads;
 
 import android.app.Activity;
@@ -12,8 +16,9 @@ import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 
 import com.mopub.common.Constants;
-import com.mopub.common.event.EventDetails;
+import com.mopub.common.DataKeys;
 import com.mopub.common.test.support.SdkTestRunner;
+import com.mopub.common.VisibilityTracker;
 import com.mopub.mobileads.BaseVideoPlayerActivity;
 import com.mopub.mobileads.BuildConfig;
 import com.mopub.mobileads.MraidVideoPlayerActivity;
@@ -67,9 +72,8 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.stub;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SdkTestRunner.class)
 @Config(constants = BuildConfig.class)
@@ -113,12 +117,14 @@ public class MoPubVideoNativeAdTest {
         jsonObject.put("ctatext", "ctatext");
         jsonObject.put("video", "video");
         jsonObject.put("extraimage", "extraimageurl");
+        jsonObject.put("privacyicon", "piiimageurl");
+        jsonObject.put("privacyclkurl", "piiclkurl");
 
         serverExtras = new HashMap<String, String>();
-        serverExtras.put("Play-Visible-Percent", "10");
-        serverExtras.put("Pause-Visible-Percent", "5");
-        serverExtras.put("Impression-Min-Visible-Percent", "15");
-        serverExtras.put("Impression-Visible-Ms", "100");
+        serverExtras.put(DataKeys.PLAY_VISIBLE_PERCENT, "10");
+        serverExtras.put(DataKeys.PAUSE_VISIBLE_PERCENT, "5");
+        serverExtras.put(DataKeys.IMPRESSION_MIN_VISIBLE_PERCENT, "15");
+        serverExtras.put(DataKeys.IMPRESSION_VISIBLE_MS, "100");
         serverExtras.put("Max-Buffer-Ms", "20");
         videoResponseHeaders = new VideoResponseHeaders(serverExtras);
 
@@ -133,13 +139,12 @@ public class MoPubVideoNativeAdTest {
 
         subject = new MoPubVideoNativeAd(
                 activity, jsonObject, mockCustomEventNativeListener, videoResponseHeaders,
-                mockVisibilityTracker, mockNativeVideoControllerFactory, null,
+                mockVisibilityTracker, mockNativeVideoControllerFactory,
                 "header click tracker", mockVastManager);
         subject.setNativeEventListener(mockNativeEventListener);
         // noinspection unchecked
         when(mockNativeVideoControllerFactory
-                .createForId(anyInt(), any(Context.class), any(List.class), eq(mockVastVideoConfig),
-                        any(EventDetails.class)))
+                .createForId(anyInt(), any(Context.class), any(List.class), eq(mockVastVideoConfig)))
                 .thenReturn(mockNativeVideoController);
 
         when(mockImageLoader.get(anyString(), any(ImageListener.class)))
@@ -153,7 +158,7 @@ public class MoPubVideoNativeAdTest {
                 });
         when(mockMediaLayout.getTextureView()).thenReturn(mockTextureView);
 
-        stub(mockImageContainer.getBitmap()).toReturn(mock(Bitmap.class));
+        when(mockImageContainer.getBitmap()).thenReturn(mock(Bitmap.class));
         Networking.setImageLoaderForTesting(mockImageLoader);
         Networking.setRequestQueueForTesting(mockRequestQueue);
     }
@@ -199,9 +204,9 @@ public class MoPubVideoNativeAdTest {
         assertThat(subject.getIconImageUrl()).isEqualTo("iconimageurl");
         assertThat(subject.getClickDestinationUrl()).isEqualTo("clk");
         assertThat(subject.getCallToAction()).isEqualTo("ctatext");
-        assertThat(subject.getPrivacyInformationIconClickThroughUrl()).isEqualTo(
-                "https://www.mopub.com/optout/");
         assertThat(subject.getVastVideo()).isEqualTo("video");
+        assertThat(subject.getPrivacyInformationIconImageUrl()).isEqualTo("piiimageurl");
+        assertThat(subject.getPrivacyInformationIconClickThroughUrl()).isEqualTo("piiclkurl");
         assertThat(subject.getExtra("extraimage")).isEqualTo("extraimageurl");
         assertThat(subject.getExtras()).hasSize(1);
     }
@@ -233,8 +238,7 @@ public class MoPubVideoNativeAdTest {
         verify(mockNativeVideoControllerFactory).createForId(anyInt(),
                 eq(activity.getApplicationContext()),
                 argumentCaptor.capture(),
-                eq(mockVastVideoConfig),
-                any(EventDetails.class));
+                eq(mockVastVideoConfig));
 
         List<VisibilityTrackingEvent> visibilityTrackingEvents = (List<VisibilityTrackingEvent>) argumentCaptor.getValue();
         assertThat(visibilityTrackingEvents.get(0).strategy).isInstanceOf(HeaderVisibilityStrategy.class);
@@ -256,6 +260,8 @@ public class MoPubVideoNativeAdTest {
         verify(mockVastVideoConfig).getImpressionTrackers();
         verify(mockVastVideoConfig).addClickTrackers(any(List.class));
         verify(mockVastVideoConfig).setClickThroughUrl("clk");
+        verify(mockVastVideoConfig).setPrivacyInformationIconImageUrl("piiimageurl");
+        verify(mockVastVideoConfig).setPrivacyInformationIconClickthroughUrl("piiclkurl");
         verify(mockCustomEventNativeListener).onNativeAdLoaded(subject);
     }
 

@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.nativeads;
 
 import android.content.Context;
@@ -51,6 +55,6 @@ class PositioningUrlGenerator extends BaseUrlGenerator {
     }
 
     private void setSdkVersion(@NonNull String sdkVersion) {
-        addParam("nsv", sdkVersion);
+        addParam("nv", sdkVersion);
     }
 }

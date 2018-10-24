@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads;
 
 import android.support.annotation.NonNull;
@@ -7,7 +11,7 @@ import com.mopub.common.AdFormat;
 import com.mopub.common.AdType;
 import com.mopub.common.util.ResponseHeader;
 
-import java.util.Map;
+import org.json.JSONObject;
 
 import static com.mopub.network.HeaderUtils.extractHeader;
 
@@ -99,7 +103,7 @@ public class AdTypeTranslator {
     public static String getCustomEventName(@NonNull AdFormat adFormat,
             @NonNull String adType,
             @Nullable String fullAdType,
-            @NonNull Map<String, String> headers) {
+            @Nullable JSONObject headers) {
         if (AdType.CUSTOM.equalsIgnoreCase(adType)) {
             return extractHeader(headers, ResponseHeader.CUSTOM_EVENT_NAME);
         } else if (AdType.STATIC_NATIVE.equalsIgnoreCase(adType)) {

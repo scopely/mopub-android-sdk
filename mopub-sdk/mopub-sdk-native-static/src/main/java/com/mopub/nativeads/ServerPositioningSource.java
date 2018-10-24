@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.nativeads;
 
 import android.content.Context;
@@ -126,7 +130,7 @@ class ServerPositioningSource implements PositioningSource {
     private void requestPositioningInternal() {
         MoPubLog.d("Loading positioning from: " + mRetryUrl);
 
-        mRequest = new PositioningRequest(mRetryUrl, mPositioningListener, mErrorListener);
+        mRequest = new PositioningRequest(mContext, mRetryUrl, mPositioningListener, mErrorListener);
         final RequestQueue requestQueue = Networking.getRequestQueue(mContext);
         requestQueue.add(mRequest);
     }

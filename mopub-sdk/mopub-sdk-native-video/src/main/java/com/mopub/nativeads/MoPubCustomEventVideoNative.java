@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.nativeads;
 
 import android.content.Context;
@@ -12,12 +16,9 @@ import android.view.View;
 import com.mopub.common.DataKeys;
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
-import com.mopub.common.event.BaseEvent;
-import com.mopub.common.event.Event;
-import com.mopub.common.event.EventDetails;
-import com.mopub.common.event.MoPubEvents;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Utils;
+import com.mopub.common.VisibilityTracker;
 import com.mopub.mobileads.MraidVideoPlayerActivity;
 import com.mopub.mobileads.VastManager;
 import com.mopub.mobileads.VastTracker;
@@ -53,7 +54,7 @@ import static com.mopub.nativeads.NativeImageHelper.preCacheImages;
 import static com.mopub.nativeads.NativeVideoController.VisibilityTrackingEvent;
 
 public class MoPubCustomEventVideoNative extends CustomEventNative {
-
+    private MoPubVideoNativeAd videoNativeAd;
     @Override
     protected void loadNativeAd(@NonNull final Context context,
             @NonNull final CustomEventNativeListener customEventNativeListener,
@@ -67,8 +68,6 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
         }
 
         final Object eventDetailsObject = localExtras.get(EVENT_DETAILS);
-        final EventDetails eventDetails = eventDetailsObject instanceof EventDetails ?
-                (EventDetails) eventDetailsObject : null;
 
         final VideoResponseHeaders videoResponseHeaders = new VideoResponseHeaders(serverExtras);
         if (!videoResponseHeaders.hasValidHeaders()) {
@@ -86,14 +85,22 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
         }
 
         final String clickTrackingUrlFromHeader = (String) clickTrackingUrlFromHeaderObject;
-        final MoPubVideoNativeAd videoNativeAd = new MoPubVideoNativeAd(context, (JSONObject) json,
-                customEventNativeListener, videoResponseHeaders, eventDetails,
+        videoNativeAd = new MoPubVideoNativeAd(context, (JSONObject) json,
+                customEventNativeListener, videoResponseHeaders,
                 clickTrackingUrlFromHeader);
         try {
             videoNativeAd.loadAd();
         } catch (IllegalArgumentException e) {
             customEventNativeListener.onNativeAdFailed(NativeErrorCode.UNSPECIFIED);
         }
+    }
+
+    @Override
+    protected void onInvalidate(){
+        if (videoNativeAd == null) {
+            return;
+        }
+        videoNativeAd.invalidate();
     }
 
     public static class MoPubVideoNativeAd extends VideoNativeAd
@@ -110,7 +117,9 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
             CLICK_DESTINATION("clk", false),
             FALLBACK("fallback", false),
             CALL_TO_ACTION("ctatext", false),
-            VAST_VIDEO("video", false);
+            VAST_VIDEO("video", false),
+            PRIVACY_INFORMATION_ICON_IMAGE_URL("privacyicon", false),
+            PRIVACY_INFORMATION_ICON_CLICKTHROUGH_URL("privacyclkurl", false);
 
             @NonNull final String mName;
             final boolean mRequired;
@@ -167,7 +176,6 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
         @Nullable VastVideoConfig mVastVideoConfig;
         @Nullable private MediaLayout mMediaLayout;
         @Nullable private View mRootView;
-        @Nullable private final EventDetails mEventDetails;
 
         private final long mId;
         private boolean mNeedsSeek;
@@ -187,11 +195,10 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
                 @NonNull final JSONObject jsonObject,
                 @NonNull final CustomEventNativeListener customEventNativeListener,
                 @NonNull final VideoResponseHeaders videoResponseHeaders,
-                @Nullable final EventDetails eventDetails,
                 @NonNull final String clickTrackingUrl) {
             this(context, jsonObject, customEventNativeListener, videoResponseHeaders,
                     new VisibilityTracker(context), new NativeVideoControllerFactory(),
-                    eventDetails, clickTrackingUrl, VastManagerFactory.create(context.getApplicationContext(), false));
+                    clickTrackingUrl, VastManagerFactory.create(context.getApplicationContext(), false));
         }
 
         @VisibleForTesting
@@ -202,7 +209,6 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
                 @NonNull final VideoResponseHeaders videoResponseHeaders,
                 @NonNull final VisibilityTracker visibilityTracker,
                 @NonNull final NativeVideoControllerFactory nativeVideoControllerFactory,
-                @Nullable final EventDetails eventDetails,
                 @NonNull final String clickTrackingUrl,
                 @NonNull final VastManager vastManager) {
             Preconditions.checkNotNull(context);
@@ -221,8 +227,6 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
 
             mNativeVideoControllerFactory = nativeVideoControllerFactory;
             mMoPubClickTrackingUrl = clickTrackingUrl;
-
-            mEventDetails = eventDetails;
 
             mId = Utils.generateUniqueId();
             mNeedsSeek = true;
@@ -270,19 +274,27 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
                     addExtra(key, mJsonObject.opt(key));
                 }
             }
-            setPrivacyInformationIconClickThroughUrl(PRIVACY_INFORMATION_CLICKTHROUGH_URL);
+            if (TextUtils.isEmpty(getPrivacyInformationIconClickThroughUrl())) {
+                setPrivacyInformationIconClickThroughUrl(PRIVACY_INFORMATION_CLICKTHROUGH_URL);
+            }
 
             preCacheImages(mContext, getAllImageUrls(), new NativeImageHelper.ImageListener() {
                 @Override
                 public void onImagesCached() {
+                    if(isInvalidated()) {
+                        return;
+                    }
                     mVastManager.prepareVastVideoConfiguration(getVastVideo(),
                             MoPubVideoNativeAd.this,
-                            mEventDetails == null ? null : mEventDetails.getDspCreativeId(),
+                            null,
                             mContext);
                 }
 
                 @Override
                 public void onImagesFailedToCache(final NativeErrorCode errorCode) {
+                    if(isInvalidated()) {
+                        return;
+                    }
                     mCustomEventNativeListener.onNativeAdFailed(errorCode);
                 }
             });
@@ -341,6 +353,10 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
                 visibilityTrackingEvents.add(vastVisibilityTrackingEvent);
             }
 
+            mVastVideoConfig.setPrivacyInformationIconImageUrl(getPrivacyInformationIconImageUrl());
+            mVastVideoConfig.setPrivacyInformationIconClickthroughUrl(
+                    getPrivacyInformationIconClickThroughUrl());
+
             Set<String> clickTrackers = new HashSet<String>();
             clickTrackers.add(mMoPubClickTrackingUrl);
             clickTrackers.addAll(getClickTrackers());
@@ -355,7 +371,7 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
             mVastVideoConfig.setClickThroughUrl(getClickDestinationUrl());
 
             mNativeVideoController = mNativeVideoControllerFactory.createForId(
-                    mId, mContext, visibilityTrackingEvents, mVastVideoConfig, mEventDetails);
+                    mId, mContext, visibilityTrackingEvents, mVastVideoConfig);
 
             mCustomEventNativeListener.onNativeAdLoaded(this);
 
@@ -411,6 +427,12 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
                         break;
                     case VAST_VIDEO:
                         setVastVideo((String) value);
+                        break;
+                    case PRIVACY_INFORMATION_ICON_IMAGE_URL:
+                        setPrivacyInformationIconImageUrl((String) value);
+                        break;
+                    case PRIVACY_INFORMATION_ICON_CLICKTHROUGH_URL:
+                        setPrivacyInformationIconClickThroughUrl((String) value);
                         break;
                     default:
                         MoPubLog.d("Unable to add JSON key to internal mapping: " + key.mName);
@@ -550,6 +572,7 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
 
         @Override
         public void destroy() {
+            invalidate();
             cleanUpMediaLayout();
             mNativeVideoController.setPlayWhenReady(false);
             mNativeVideoController.release(this);
@@ -675,13 +698,6 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
                     mNativeVideoController.setAppAudioEnabled(false);
                     mMediaLayout.setMode(MediaLayout.Mode.IMAGE);
                     // Only log the failed to play event when the video has not started
-                    if (previousState != VideoState.PLAYING && previousState != VideoState.PLAYING_MUTED) {
-                        MoPubEvents.log(Event.createEventFromDetails(
-                                BaseEvent.Name.ERROR_FAILED_TO_PLAY,
-                                BaseEvent.Category.NATIVE_VIDEO,
-                                BaseEvent.SamplingRate.NATIVE_VIDEO,
-                                mEventDetails));
-                    }
                     break;
                 case CREATED:
                 case LOADING:
@@ -789,11 +805,14 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
         @NonNull
         private List<String> getAllImageUrls() {
             final List<String> imageUrls = new ArrayList<String>();
-            if (getMainImageUrl() != null) {
+            if (!TextUtils.isEmpty(getMainImageUrl())) {
                 imageUrls.add(getMainImageUrl());
             }
-            if (getIconImageUrl() != null) {
+            if (!TextUtils.isEmpty(getIconImageUrl())) {
                 imageUrls.add(getIconImageUrl());
+            }
+            if (!TextUtils.isEmpty(getPrivacyInformationIconImageUrl())) {
+                imageUrls.add(getPrivacyInformationIconImageUrl());
             }
 
             imageUrls.addAll(getExtrasImageUrls());
@@ -896,10 +915,9 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
         public NativeVideoController createForId(final long id,
                 @NonNull final Context context,
                 @NonNull final List<VisibilityTrackingEvent> visibilityTrackingEvents,
-                @NonNull final VastVideoConfig vastVideoConfig,
-                @Nullable final EventDetails eventDetails) {
+                @NonNull final VastVideoConfig vastVideoConfig) {
             return NativeVideoController.createForId(id, context, visibilityTrackingEvents,
-                    vastVideoConfig, eventDetails);
+                    vastVideoConfig);
         }
     }
 

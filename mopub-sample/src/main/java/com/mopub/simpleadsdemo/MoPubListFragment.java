@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.simpleadsdemo;
 
 import android.app.AlertDialog;
@@ -33,16 +37,15 @@ import java.util.List;
 import static com.mopub.simpleadsdemo.MoPubSampleAdUnit.AdType;
 import static com.mopub.simpleadsdemo.Utils.logToast;
 
-
 interface TrashCanClickListener {
     void onTrashCanClicked(MoPubSampleAdUnit adUnit);
 }
 
 public class MoPubListFragment extends ListFragment implements TrashCanClickListener {
-
     private static final String AD_UNIT_ID_KEY = "adUnitId";
     private static final String FORMAT_KEY = "format";
     static final String KEYWORDS_KEY = "keywords";
+    static final String USER_DATA_KEYWORDS_KEY = "user_data_keywords";
     private static final String NAME_KEY = "name";
 
     private MoPubSampleListAdapter mAdapter;
@@ -80,7 +83,8 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
         final MoPubSampleAdUnit adUnit = new MoPubSampleAdUnit.Builder(adUnitId,
                 adType).description(name == null ? "" : name).build();
         final MoPubSampleAdUnit newAdUnit = addAdUnit(adUnit);
-        enterAdFragment(newAdUnit, deeplinkData.getQueryParameter(KEYWORDS_KEY));
+        enterAdFragment(newAdUnit, deeplinkData.getQueryParameter(KEYWORDS_KEY),
+                deeplinkData.getQueryParameter(USER_DATA_KEYWORDS_KEY));
     }
 
     @Override
@@ -107,12 +111,12 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
         final MoPubSampleAdUnit adConfiguration = mAdapter.getItem(position);
 
         if (adConfiguration != null) {
-            enterAdFragment(adConfiguration, null);
+            enterAdFragment(adConfiguration, null, null);
         }
     }
 
     private void enterAdFragment(@NonNull final MoPubSampleAdUnit adConfiguration,
-            @Nullable final String keywords) {
+             @Nullable final String keywords, @Nullable final String userDataKeywords) {
         Preconditions.checkNotNull(adConfiguration);
 
         final FragmentTransaction fragmentTransaction =
@@ -134,6 +138,9 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
         final Bundle bundle = adConfiguration.toBundle();
         if (!TextUtils.isEmpty(keywords)) {
             bundle.putString(KEYWORDS_KEY, keywords);
+        }
+        if (!TextUtils.isEmpty(userDataKeywords)) {
+            bundle.putString(USER_DATA_KEYWORDS_KEY, userDataKeywords);
         }
         fragment.setArguments(bundle);
 

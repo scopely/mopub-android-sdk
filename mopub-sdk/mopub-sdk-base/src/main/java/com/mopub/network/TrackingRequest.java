@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.network;
 
 import android.content.Context;
@@ -6,14 +10,12 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.Preconditions;
-import com.mopub.common.event.BaseEvent;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.VastErrorCode;
 import com.mopub.mobileads.VastMacroHelper;
 import com.mopub.mobileads.VastTracker;
 import com.mopub.volley.DefaultRetryPolicy;
 import com.mopub.volley.NetworkResponse;
-import com.mopub.volley.Request;
 import com.mopub.volley.RequestQueue;
 import com.mopub.volley.Response;
 import com.mopub.volley.VolleyError;
@@ -23,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TrackingRequest extends Request<Void> {
+public class TrackingRequest extends MoPubRequest<Void> {
 
     // Retrying may cause duplicate impressions
     private static final int ZERO_RETRIES = 0;
@@ -34,8 +36,10 @@ public class TrackingRequest extends Request<Void> {
 
     @Nullable private final TrackingRequest.Listener mListener;
 
-    private TrackingRequest(@NonNull final String url, @Nullable final Listener listener) {
-        super(Method.GET, url, listener);
+    private TrackingRequest(@NonNull final Context context,
+            @NonNull final String url,
+            @Nullable final Listener listener) {
+        super(context, url, listener);
         mListener = listener;
         setShouldCache(false);
         setRetryPolicy(new DefaultRetryPolicy(
@@ -98,8 +102,7 @@ public class TrackingRequest extends Request<Void> {
 
     public static void makeTrackingHttpRequest(@Nullable final Iterable<String> urls,
             @Nullable final Context context,
-            @Nullable final Listener listener,
-            final BaseEvent.Name name) {
+            @Nullable final Listener listener) {
         if (urls == null || context == null) {
             return;
         }
@@ -127,43 +130,27 @@ public class TrackingRequest extends Request<Void> {
                     }
                 }
             };
-            final TrackingRequest trackingRequest = new TrackingRequest(url, internalListener);
+            final TrackingRequest trackingRequest = new TrackingRequest(context, url,
+                    internalListener);
             requestQueue.add(trackingRequest);
         }
     }
 
     public static void makeTrackingHttpRequest(@Nullable final String url,
             @Nullable final Context context) {
-        makeTrackingHttpRequest(url, context, null, null);
-    }
-
-    public static void makeTrackingHttpRequest(@Nullable final String url,
-            @Nullable final Context context, @Nullable Listener listener) {
-        makeTrackingHttpRequest(url, context, listener, null);
-    }
-
-    public static void makeTrackingHttpRequest(@Nullable final String url,
-            @Nullable final Context context, final BaseEvent.Name name) {
-        makeTrackingHttpRequest(url, context, null, name);
+        makeTrackingHttpRequest(url, context, null);
     }
 
     public static void makeTrackingHttpRequest(@Nullable final String url,
             @Nullable final Context context,
-            @Nullable Listener listener,
-            final BaseEvent.Name name) {
+            @Nullable Listener listener) {
         if (url != null) {
-            makeTrackingHttpRequest(Arrays.asList(url), context, listener, name);
+            makeTrackingHttpRequest(Arrays.asList(url), context, listener);
         }
     }
 
     public static void makeTrackingHttpRequest(@Nullable final Iterable<String> urls,
             @Nullable final Context context) {
-        makeTrackingHttpRequest(urls, context, null, null);
-    }
-
-    public static void makeTrackingHttpRequest(@Nullable final Iterable<String> urls,
-            @Nullable final Context context,
-            final BaseEvent.Name name) {
-        makeTrackingHttpRequest(urls, context, null, name);
+        makeTrackingHttpRequest(urls, context, null);
     }
 }

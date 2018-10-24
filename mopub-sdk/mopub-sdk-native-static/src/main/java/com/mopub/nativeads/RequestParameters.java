@@ -1,9 +1,15 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.nativeads;
 
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import com.mopub.common.MoPub;
 
 import java.util.EnumSet;
 
@@ -31,11 +37,13 @@ public class RequestParameters {
     }
 
     @Nullable private final String mKeywords;
+    @Nullable private final String mUserDataKeywords;
     @Nullable private final Location mLocation;
     @Nullable private final EnumSet<NativeAdAsset> mDesiredAssets;
 
     public final static class Builder {
         private String keywords;
+        private String userDatakeywords;
         private Location location;
         private EnumSet<NativeAdAsset> desiredAssets;
 
@@ -46,8 +54,14 @@ public class RequestParameters {
         }
 
         @NonNull
+        public final Builder userDataKeywords(String userDataKeywords) {
+            this.userDatakeywords = MoPub.canCollectPersonalInformation() ? userDataKeywords : null;
+            return this;
+        }
+
+        @NonNull
         public final Builder location(Location location) {
-            this.location = location;
+            this.location = MoPub.canCollectPersonalInformation() ? location : null;
             return this;
         }
 
@@ -66,13 +80,24 @@ public class RequestParameters {
 
     private RequestParameters(@NonNull Builder builder) {
         mKeywords = builder.keywords;
-        mLocation = builder.location;
         mDesiredAssets = builder.desiredAssets;
+
+        final boolean canCollectPersonalInformation = MoPub.canCollectPersonalInformation();
+        mUserDataKeywords = canCollectPersonalInformation ? builder.userDatakeywords : null;
+        mLocation = canCollectPersonalInformation ? builder.location : null;
     }
 
     @Nullable
     public final String getKeywords() {
         return mKeywords;
+    }
+
+    @Nullable
+    public final String getUserDataKeywords() {
+        if(!MoPub.canCollectPersonalInformation()) {
+            return null;
+        }
+        return mUserDataKeywords;
     }
 
     @Nullable

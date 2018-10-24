@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads;
 
 import android.app.Activity;
@@ -75,6 +79,8 @@ public class MoPubInterstitialTest {
 
         customEventInterstitialAdapter = TestCustomEventInterstitialAdapterFactory.getSingletonMock();
         reset(customEventInterstitialAdapter);
+        when(customEventInterstitialAdapter.isAutomaticImpressionAndClickTrackingEnabled())
+                .thenReturn(true);
         adViewController = TestAdViewControllerFactory.getSingletonMock();
     }
 
@@ -91,18 +97,38 @@ public class MoPubInterstitialTest {
     }
 
     @Test
-    public void setKeywordsTest() throws Exception {
+    public void setUserDataKeywordsTest() throws Exception {
+        subject.setInterstitialView(interstitialView);
+        String userDataKeywords = "these_are_user_data_keywords";
+
+        subject.setUserDataKeywords(userDataKeywords);
+        verify(interstitialView).setUserDataKeywords(eq(userDataKeywords));
+    }
+
+    @Test
+    public void getUserDataKeywords() throws Exception {
+        subject.setInterstitialView(interstitialView);
+
+        subject.getUserDataKeywords();
+        verify(interstitialView).getUserDataKeywords();
+    }
+
+    @Test
+    public void setKeywords_withNonEmptyKeywords_shouldsetKeywordsOnInterstitialView() throws Exception {
         subject.setInterstitialView(interstitialView);
         String keywords = "these_are_keywords";
 
         subject.setKeywords(keywords);
+
         verify(interstitialView).setKeywords(eq(keywords));
     }
+
     @Test
-    public void getKeywordsTest() throws Exception {
+    public void getKeywordsTest_shouldCallGetKeywordsOnInterstitialView() throws Exception {
         subject.setInterstitialView(interstitialView);
 
         subject.getKeywords();
+
         verify(interstitialView).getKeywords();
     }
 
@@ -212,6 +238,30 @@ public class MoPubInterstitialTest {
         subject.onCustomEventInterstitialClicked();
 
         verify(interstitialAdListener, never()).onInterstitialClicked(eq(subject));
+    }
+
+    @Test
+    public void onCustomEventInterstitialImpression_whenAutomaticImpressionTrackingIsEnabled_shouldDoNothing() {
+        subject.setCustomEventInterstitialAdapter(customEventInterstitialAdapter);
+        subject.setInterstitialView(interstitialView);
+        when(customEventInterstitialAdapter.isAutomaticImpressionAndClickTrackingEnabled())
+                .thenReturn(true);
+
+        subject.onCustomEventInterstitialImpression();
+
+        verify(interstitialView, never()).trackImpression();
+    }
+
+    @Test
+    public void onCustomEventInterstitialImpression_whenAutomaticImpressionTrackingIsDisabled_shouldDoNothing() {
+        subject.setCustomEventInterstitialAdapter(customEventInterstitialAdapter);
+        subject.setInterstitialView(interstitialView);
+        when(customEventInterstitialAdapter.isAutomaticImpressionAndClickTrackingEnabled())
+                .thenReturn(false);
+
+        subject.onCustomEventInterstitialImpression();
+
+        verify(interstitialView).trackImpression();
     }
 
     @Test

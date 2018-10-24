@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.simpleadsdemo;
 
 import android.app.Activity;
@@ -44,6 +48,7 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
                 // If your app already has location access, include it here.
                 final Location location = null;
                 final String keywords = views.mKeywordsField.getText().toString();
+                final String userDataKeywords = views.mUserDataKeywordsField.getText().toString();
 
                 // Setting desired assets on your request helps native ad networks and bidders
                 // provide higher-quality ads.
@@ -57,6 +62,7 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
                 mRequestParameters = new RequestParameters.Builder()
                         .location(location)
                         .keywords(keywords)
+                        .userDataKeywords(userDataKeywords)
                         .desiredAssets(desiredAssets)
                         .build();
 
@@ -70,6 +76,7 @@ public class NativeGalleryFragment extends Fragment implements MoPubNativeAdLoad
         views.mDescriptionView.setText(mAdConfiguration.getDescription());
         views.mAdUnitIdView.setText(adUnitId);
         views.mKeywordsField.setText(getArguments().getString(MoPubListFragment.KEYWORDS_KEY, ""));
+        views.mUserDataKeywordsField.setText(getArguments().getString(MoPubListFragment.USER_DATA_KEYWORDS_KEY, ""));
         mViewPager = (ViewPager) view.findViewById(R.id.gallery_pager);
 
         // Set up a renderer for a static native ad.

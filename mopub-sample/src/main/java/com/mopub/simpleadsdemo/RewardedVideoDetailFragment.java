@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.simpleadsdemo;
 
 import android.app.AlertDialog;
@@ -13,8 +17,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
-import com.mopub.mobileads.CustomEventRewardedVideo;
+import com.mopub.common.SdkConfiguration;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubRewardedVideoListener;
 import com.mopub.mobileads.MoPubRewardedVideoManager.RequestParameters;
@@ -35,8 +40,7 @@ public class RewardedVideoDetailFragment extends Fragment implements MoPubReward
     private static boolean sRewardedVideoInitialized;
 
     // Include any custom event rewarded video classes, if available, for initialization.
-    private static final List<Class<? extends CustomEventRewardedVideo>> sNetworksToInit =
-            new LinkedList<>();
+    private static final List<String> sNetworksToInit = new LinkedList<>();
 
     @Nullable private Button mShowButton;
     @Nullable private String mAdUnitId;
@@ -51,10 +55,14 @@ public class RewardedVideoDetailFragment extends Fragment implements MoPubReward
         final View view = inflater.inflate(R.layout.interstitial_detail_fragment, container, false);
         final DetailFragmentViewHolder views = DetailFragmentViewHolder.fromView(view);
         views.mKeywordsField.setText(getArguments().getString(MoPubListFragment.KEYWORDS_KEY, ""));
+        views.mUserDataKeywordsField.setText(getArguments().getString(MoPubListFragment.USER_DATA_KEYWORDS_KEY, ""));
         hideSoftKeyboard(views.mKeywordsField);
+        hideSoftKeyboard(views.mUserDataKeywordsField);
 
         if (!sRewardedVideoInitialized) {
-            MoPubRewardedVideos.initializeRewardedVideo(getActivity(), sNetworksToInit);
+            MoPub.initializeSdk(getActivity(), new SdkConfiguration.Builder(
+                            "b195f8dd8ded45fe847ad89ed1d016da")
+                            .withNetworksToInit(sNetworksToInit).build(), null);
             sRewardedVideoInitialized = true;
         }
         MoPubRewardedVideos.setRewardedVideoListener(this);
@@ -71,7 +79,7 @@ public class RewardedVideoDetailFragment extends Fragment implements MoPubReward
                     return;
                 }
                 MoPubRewardedVideos.loadRewardedVideo(mAdUnitId,
-                        new RequestParameters(views.mKeywordsField.getText().toString(), null,
+                        new RequestParameters(views.mKeywordsField.getText().toString(), views.mUserDataKeywordsField.getText().toString(),null,
                                 "sample_app_customer_id"));
                 if (mShowButton != null) {
                     mShowButton.setEnabled(false);
@@ -103,6 +111,7 @@ public class RewardedVideoDetailFragment extends Fragment implements MoPubReward
 
     @Override
     public void onDestroyView() {
+        MoPubRewardedVideos.setRewardedVideoListener(null);
         super.onDestroyView();
     }
 
