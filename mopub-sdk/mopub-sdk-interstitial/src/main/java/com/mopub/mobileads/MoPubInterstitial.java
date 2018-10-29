@@ -250,6 +250,7 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
      */
     private void setInterstitialStateDestroyed() {
         invalidateInterstitialAdapter();
+        mInterstitialAdListener = null;
         mInterstitialView.setBannerAdListener(null);
         mInterstitialView.destroy();
         mHandler.removeCallbacks(mAdExpiration);
@@ -277,8 +278,8 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         return mCurrentInterstitialState == DESTROYED;
     }
 
-    Integer getAdTimeoutDelay() {
-        return mInterstitialView.getAdTimeoutDelay();
+    Integer getAdTimeoutDelay(int defaultValue) {
+        return mInterstitialView.getAdTimeoutDelay(defaultValue);
     }
 
     @NonNull
@@ -385,6 +386,11 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
             mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this,
                     mInterstitialView.getAdViewController().getAdReport().getDspCreativeId());
         }
+
+        if (mInterstitialView.mAdViewController != null) {
+            mInterstitialView.mAdViewController.creativeDownloadSuccess();
+        }
+
         if (mInterstitialAdListener != null) {
             mInterstitialAdListener.onInterstitialLoaded(this);
         }
@@ -411,7 +417,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
             return;
         }
 
-        mInterstitialView.trackImpression();
+        if (mCustomEventInterstitialAdapter == null ||
+                mCustomEventInterstitialAdapter.isAutomaticImpressionAndClickTrackingEnabled()) {
+            mInterstitialView.trackImpression();
+        }
 
         if (mInterstitialAdListener != null) {
             mInterstitialAdListener.onInterstitialShown(this);
@@ -428,6 +437,18 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
         if (mInterstitialAdListener != null) {
             mInterstitialAdListener.onInterstitialClicked(this);
+        }
+    }
+
+    @Override
+    public void onCustomEventInterstitialImpression() {
+        if (isDestroyed()) {
+            return;
+        }
+
+        if (mCustomEventInterstitialAdapter != null &&
+                !mCustomEventInterstitialAdapter.isAutomaticImpressionAndClickTrackingEnabled()) {
+            mInterstitialView.trackImpression();
         }
     }
 
