@@ -233,12 +233,14 @@ public class AdViewController {
         if (TextUtils.isEmpty(mAdUnitId)) {
             MoPubLog.d("Can't load an ad in this ad view because the ad unit ID is not set. " +
                     "Did you forget to call setAdUnitId()?");
+            adDidFail(MoPubErrorCode.WARMUP);
             return;
         }
 
         if (!isNetworkAvailable()) {
             MoPubLog.d("Can't load an ad because there is no network connectivity.");
             scheduleRefreshTimerIfEnabled();
+            adDidFail(MoPubErrorCode.NETWORK_INVALID_STATE);
             return;
         }
 
