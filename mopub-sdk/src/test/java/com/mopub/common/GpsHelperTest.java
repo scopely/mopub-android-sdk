@@ -1,24 +1,21 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.common;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Looper;
 
 import com.mopub.common.factories.MethodBuilderFactory;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.common.util.test.support.TestMethodBuilderFactory;
-import com.mopub.mobileads.BuildConfig;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import java.util.concurrent.Semaphore;
@@ -32,7 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SdkTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class GpsHelperTest {
     private MethodBuilder methodBuilder;
     private Activity context;
@@ -84,34 +80,7 @@ public class GpsHelperTest {
     }
 
     @Test
-    public void isPlayServicesAvailable_whenGooglePlayServicesIsLinked_shouldReturnTrue() throws Exception {
-        GpsHelper.setClassNamesForTesting();
-        when(methodBuilder.execute()).thenReturn(GpsHelper.GOOGLE_PLAY_SUCCESS_CODE);
-        assertThat(GpsHelper.isPlayServicesAvailable(context)).isTrue();
-    }
-
-    @Test
-    public void isPlayServicesAvailable_whenGooglePlayServicesReturnsNonSuccessCode_shouldReturnFalse() throws Exception {
-        GpsHelper.setClassNamesForTesting();
-        when(methodBuilder.execute()).thenReturn(GpsHelper.GOOGLE_PLAY_SUCCESS_CODE + 1);
-        assertThat(GpsHelper.isPlayServicesAvailable(context)).isFalse();
-    }
-
-    @Test
-    public void isPlayServicesAvailable_whenGooglePlayServicesReturnsNull_shouldReturnFalse() throws Exception {
-        GpsHelper.setClassNamesForTesting();
-        when(methodBuilder.execute()).thenReturn(null);
-        assertThat(GpsHelper.isPlayServicesAvailable(context)).isFalse();
-    }
-
-    @Test
-    public void isPlayServicesAvailable_whenGooglePlayServicesIsNotLinked_shouldReturnFalse() throws Exception {
-        assertThat(GpsHelper.isPlayServicesAvailable(context)).isFalse();
-    }
-
-    @Test
     public void fetchAdvertisingInfoAsync_whenGooglePlayServicesIsLinked_shouldInvokeCallbackOnMainLooper() throws Exception {
-        GpsHelper.setClassNamesForTesting();
         when(methodBuilder.execute()).thenReturn(
                 adInfo,
                 adInfo.mAdId,
@@ -165,7 +134,6 @@ public class GpsHelperTest {
 
     @Test
     public void isLimitAdTrackingEnabled_whenGooglePlayServicesIsLinkedAndLimitAdTrackingIsCached_shouldReturnLimitAdTracking() throws Exception {
-        GpsHelper.setClassNamesForTesting();
         when(methodBuilder.execute()).thenReturn(GpsHelper.GOOGLE_PLAY_SUCCESS_CODE);
         SharedPreferencesHelper.getSharedPreferences(context)
                 .edit()
@@ -176,7 +144,6 @@ public class GpsHelperTest {
 
     @Test
     public void isLimitAdTrackingEnabled_whenGooglePlayServicesIsLinkedAndAdInfoIsNotCached_shouldReturnFalse() throws Exception {
-        GpsHelper.setClassNamesForTesting();
         when(methodBuilder.execute()).thenReturn(GpsHelper.GOOGLE_PLAY_SUCCESS_CODE);
         assertThat(GpsHelper.isLimitAdTrackingEnabled(context)).isFalse();
     }

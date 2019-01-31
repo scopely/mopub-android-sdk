@@ -1,3 +1,25 @@
+## Version 5.5.0 (January 28, 2019)
+- **Features**
+  - Advanced Bidding automatically initializes. See [https://developers.mopub.com/docs/android/initialization/] for more information about initialization.
+  - GDPR legitimate interest API now available; publishers may opt into allowing supported networks to collect user information on the basis of legitimate interest.
+  - Improved logging from the SDK. Set the log level with `SdkConfiguration.Builder#withLogLevel(LogLevel)` in initialization to change the logging granularity.
+  - Upgraded Gradle dependency to 4.8
+  - Upgraded Android Plugin dependency to 3.2.0
+
+- **Bug Fixes**
+  - Addresses an ANR when requesting an ad immediately after initialization.
+  - MRAID isReady is now called after the load is finished instead of when the ad is shown.
+
+## Version 5.4.1 (November 28, 2018)
+- **Bug Fixes**
+  - Fixed bug with the internal state of rewarded video when the video fails to play.
+  - Fixed bug where initialization complete is called multiple times.
+  - Fixed Google Advertising ID fetching logic.
+  - Marked `gdprApplies` as nullable
+  - Added cleartextTrafficPermitted="true" to Android Sample App.
+  - Fixed bug where `rewardedAdsLoaders.markPlayed()` was fired before `onRewardedVideoClosed()`.
+  - Added `adDidFail` callback to `!isNetworkAvailable()` in `AdViewController`.
+
 ## Version 5.4.0 (October 3, 2018)
 - Upgraded target SDK version to 28 and support libraries to 28.0.0.
 - Upgraded ExoPlayer dependency to 2.8.3.

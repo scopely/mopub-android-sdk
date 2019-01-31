@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -14,7 +14,6 @@ import com.mopub.common.GpsHelper;
 import com.mopub.common.SdkInitializationListener;
 import com.mopub.common.util.AsyncTasks;
 import com.mopub.common.util.Reflection;
-import com.mopub.mobileads.BuildConfig;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +29,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.util.concurrent.RoboExecutorService;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import java.util.Calendar;
@@ -44,7 +42,6 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
 @PowerMockIgnore({"org.mockito.*", "org.robolectric.*", "android.*", "org.json.*"})
 @PrepareForTest(GpsHelper.class)
 public class MoPubIdentifierTest {
@@ -266,18 +263,6 @@ public class MoPubIdentifierTest {
     }
 
     @Test
-    public void isPlayServiceAvailable_whenGoogleAvailable_shouldCallGpsHelper_shouldReturnTrue() {
-        subject = new MoPubIdentifier(context, idChangeListener);
-        assertThat(subject.isPlayServicesAvailable()).isFalse();
-
-        setupGooglePlayService(context, false);
-
-        assertThat(subject.isPlayServicesAvailable()).isTrue();
-        verifyStatic();
-        GpsHelper.isPlayServicesAvailable(any(Context.class));
-    }
-
-    @Test
     public void setAdvertisingInfo_whenCalledTwice_shouldCallInitializationListenerOnce_validateSavedAdvertisingIds() throws Exception {
         final AdvertisingId adId1 = new AdvertisingId("ifa1", "mopub1", false, Calendar.getInstance().getTimeInMillis());
         final AdvertisingId adId2 = new AdvertisingId("ifa2", "mopub2", false, Calendar.getInstance().getTimeInMillis());
@@ -449,7 +434,6 @@ public class MoPubIdentifierTest {
     // Unit tests utility functions
     public static void setupGooglePlayService(Context context, boolean limitAdTracking) {
         PowerMockito.mockStatic(GpsHelper.class);
-        PowerMockito.when(GpsHelper.isPlayServicesAvailable(context)).thenReturn(true);
         PowerMockito.when(GpsHelper.isLimitAdTrackingEnabled(context)).thenReturn(limitAdTracking);
         PowerMockito.when(GpsHelper.fetchAdvertisingInfoSync(context)).thenReturn(new GpsHelper.AdvertisingInfo(GOOGLE_AD_ID, limitAdTracking));
     }

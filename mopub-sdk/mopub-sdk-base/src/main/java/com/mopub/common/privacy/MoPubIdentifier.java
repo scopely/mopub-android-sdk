@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -22,6 +22,8 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.AsyncTasks;
 
 import java.util.Calendar;
+
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 
 public class MoPubIdentifier {
 
@@ -50,7 +52,7 @@ public class MoPubIdentifier {
     private boolean initialized;
 
     @Nullable
-    private SdkInitializationListener mInitializationListener;
+    private volatile SdkInitializationListener mInitializationListener;
 
     public MoPubIdentifier(@NonNull final Context appContext) {
         this(appContext, null);
@@ -92,34 +94,24 @@ public class MoPubIdentifier {
     }
 
     void refreshAdvertisingInfoBackgroundThread() {
-        long time = Calendar.getInstance().getTimeInMillis();
+        final long time = Calendar.getInstance().getTimeInMillis();
+
+        final AdvertisingId oldInfo = mAdInfo;
+        AdvertisingId newInfo;
 
         // try google
-        if (isPlayServicesAvailable()) {
-            GpsHelper.AdvertisingInfo info = GpsHelper.fetchAdvertisingInfoSync(mAppContext);
-            if (info != null && !TextUtils.isEmpty(info.advertisingId)) {
-                final AdvertisingId oldId = mAdInfo;
-                if (oldId.isRotationRequired()) {
-                    setAdvertisingInfo(info.advertisingId, AdvertisingId.generateIdString(), info.limitAdTracking, time);
-                } else {
-                    setAdvertisingInfo(info.advertisingId, oldId.mMopubId, info.limitAdTracking, oldId.mLastRotation.getTimeInMillis());
-                }
-                return;
-            } else {
-                MoPubLog.w("Call to 'getAdvertisingIdInfo' returned invalid value.");
-            }
+        final GpsHelper.AdvertisingInfo googleAdInfo = GpsHelper.fetchAdvertisingInfoSync(mAppContext);
+        if (googleAdInfo != null && !TextUtils.isEmpty(googleAdInfo.advertisingId)) {
+            newInfo = new AdvertisingId(googleAdInfo.advertisingId, oldInfo.mMopubId, googleAdInfo.limitAdTracking, oldInfo.mLastRotation.getTimeInMillis());
+        } else {
+            newInfo = getAmazonAdvertisingInfo(mAppContext);
         }
 
-        // try amazon
-        final AdvertisingId info = getAmazonAdvertisingInfo(mAppContext);
-        if (info != null && !TextUtils.isEmpty(info.mAdvertisingId)) {
-            final AdvertisingId oldId = mAdInfo;
-            if (oldId.isRotationRequired()) {
-                setAdvertisingInfo(info.mAdvertisingId, AdvertisingId.generateIdString(), info.mDoNotTrack, time);
-            } else {
-                setAdvertisingInfo(info.mAdvertisingId, oldId.mMopubId, info.mDoNotTrack, oldId.mLastRotation.getTimeInMillis());
-            }
-            return;
+        if (newInfo != null) {
+            final String newMoPubId = oldInfo.isRotationRequired() ? AdvertisingId.generateIdString() : oldInfo.mMopubId;
+            final long newRotationTime = oldInfo.isRotationRequired() ? time : oldInfo.mLastRotation.getTimeInMillis();
+
+            setAdvertisingInfo(newInfo.mAdvertisingId, newMoPubId, newInfo.mDoNotTrack, newRotationTime);
         }
 
         // MoPub
@@ -141,7 +133,7 @@ public class MoPubIdentifier {
                 return new AdvertisingId(ifa_id, mopub_id, limitTracking, time);
             }
         } catch (ClassCastException ex) {
-            MoPubLog.e("Cannot read identifier from shared preferences");
+            MoPubLog.log(CUSTOM, "Cannot read identifier from shared preferences");
         }
         return null;
     }
@@ -216,10 +208,11 @@ public class MoPubIdentifier {
         }
     }
 
-    private void reportInitializationComplete() {
-        if (mInitializationListener != null) {
-            mInitializationListener.onInitializationFinished();
+    private synchronized void reportInitializationComplete() {
+        final SdkInitializationListener listener = mInitializationListener;
+        if (listener != null) {
             mInitializationListener = null;
+            listener.onInitializationFinished();
         }
     }
 
@@ -229,10 +222,6 @@ public class MoPubIdentifier {
         if (mIdChangeListener != null) {
             mIdChangeListener.onIdChanged(oldId, newId);
         }
-    }
-
-    boolean isPlayServicesAvailable() {
-        return GpsHelper.isPlayServicesAvailable(mAppContext);
     }
 
     // For Amazon tablets running Fire OS 5.1+ and TV devices running Fire OS 5.2.1.1+, the
