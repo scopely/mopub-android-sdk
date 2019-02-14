@@ -273,21 +273,6 @@ public class AdViewControllerTest {
     }
 
     @Test
-    public void scheduleRefreshTimer_whenAdViewControllerNotConfiguredByResponse_shouldHaveDefaultRefreshTime() throws Exception {
-        ShadowLooper.pauseMainLooper();
-        assertThat(Robolectric.getForegroundThreadScheduler().size()).isEqualTo(0);
-
-        subject.scheduleRefreshTimerIfEnabled();
-        assertThat(Robolectric.getForegroundThreadScheduler().size()).isEqualTo(1);
-
-        ShadowLooper.idleMainLooper(AdViewController.DEFAULT_REFRESH_TIME_MILLISECONDS - 1);
-        assertThat(Robolectric.getForegroundThreadScheduler().size()).isEqualTo(1);
-
-        ShadowLooper.idleMainLooper(1);
-        assertThat(Robolectric.getForegroundThreadScheduler().size()).isEqualTo(0);
-    }
-
-    @Test
     public void setShouldAllowAutoRefresh_shouldSetCurrentAutoRefreshStatus() throws Exception {
         assertThat(subject.getCurrentAutoRefreshStatus()).isTrue();
 
@@ -335,16 +320,6 @@ public class AdViewControllerTest {
         subject.resumeRefresh();
 
         assertThat(subject.getCurrentAutoRefreshStatus()).isTrue();
-    }
-
-    @Test
-    public void enablingAutoRefresh_afterLoadAd_shouldScheduleNewRefreshTimer() throws Exception {
-
-        final AdViewController adViewControllerSpy = spy(subject);
-
-        adViewControllerSpy.loadAd();
-        adViewControllerSpy.setShouldAllowAutoRefresh(true);
-        verify(adViewControllerSpy).scheduleRefreshTimerIfEnabled();
     }
 
     @Test

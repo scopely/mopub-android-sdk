@@ -134,7 +134,8 @@ class RewardedAdsLoaders {
 
     String getDspCreativeId(String adUnitId) {
         AdLoaderRewardedVideo loaderRewardedVideo = mAdUnitToAdLoader.get(adUnitId);
-        if (loaderRewardedVideo == null) {
+        if (loaderRewardedVideo == null ||
+                loaderRewardedVideo.getLastDeliveredResponse() == null) {
             return "";
         }
 
