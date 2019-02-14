@@ -382,9 +382,16 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
         attemptStateTransition(READY);
 
+        String creativeId = "";
+        if (mInterstitialView != null &&
+                mInterstitialView.getAdViewController() != null &&
+                mInterstitialView.getAdViewController().getAdReport() != null) {
+            creativeId = mInterstitialView.getAdViewController().getAdReport().getDspCreativeId();
+        }
+
         if (mInterstitialCustomEventAdListener != null) {
             mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this,
-                    mInterstitialView.getAdViewController().getAdReport().getDspCreativeId());
+                    creativeId);
         }
 
         if (mInterstitialView.mAdViewController != null) {
