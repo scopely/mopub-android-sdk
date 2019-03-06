@@ -390,6 +390,26 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         mInterstitialView.setLocalExtras(extras);
     }
 
+    private String getCreativeId() {
+        String creativeId = "";
+        if (mInterstitialView != null &&
+                mInterstitialView.getAdViewController() != null &&
+                mInterstitialView.getAdViewController().getAdReport() != null) {
+            creativeId = mInterstitialView.getAdViewController().getAdReport().getDspCreativeId();
+        }
+        return creativeId;
+    }
+
+    private String getLineItemId() {
+        String lineItemId = "";
+        if (mInterstitialView != null &&
+                mInterstitialView.getAdViewController() != null &&
+                mInterstitialView.getAdViewController().getAdReport() != null) {
+            lineItemId = mInterstitialView.getAdViewController().getAdReport().getLineItemId();
+        }
+        return lineItemId;
+    }
+
     @NonNull
     public Map<String, Object> getLocalExtras() {
         return mInterstitialView.getLocalExtras();
@@ -407,14 +427,8 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         }
 
         if (mInterstitialCustomEventAdListener != null) {
-            String creativeId = "";
-            if (mInterstitialView != null &&
-                    mInterstitialView.getAdViewController() != null &&
-                    mInterstitialView.getAdViewController().getAdReport() != null) {
-                creativeId = mInterstitialView.getAdViewController().getAdReport().getDspCreativeId();
-            }
             mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this,
-                    creativeId);
+                    getCreativeId(), getLineItemId());
         }
 
         attemptStateTransition(READY);
