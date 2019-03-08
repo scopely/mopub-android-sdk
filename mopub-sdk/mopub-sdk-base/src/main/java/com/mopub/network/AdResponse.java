@@ -302,6 +302,7 @@ public class AdResponse implements Serializable {
                 .setAdTimeoutDelayMilliseconds(mAdTimeoutDelayMillis)
                 .setRefreshTimeMilliseconds(mRefreshTimeMillis)
                 .setDspCreativeId(mDspCreativeId)
+                .setLineItemId(mLineItemId)
                 .setResponseBody(mResponseBody)
                 .setJsonBody(mJsonBody)
                 .setCustomEventClassName(mCustomEventClassName)
