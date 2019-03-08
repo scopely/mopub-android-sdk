@@ -264,7 +264,7 @@ public class MoPubView extends FrameLayout {
     private String getLineItemId() {
         String lineItemId = "";
         if (mAdViewController != null && mAdViewController.getAdReport() != null) {
-            lineItemId = mAdViewController.getAdReport().getDspCreativeId();
+            lineItemId = mAdViewController.getAdReport().getLineItemId();
         }
         return lineItemId;
     }
