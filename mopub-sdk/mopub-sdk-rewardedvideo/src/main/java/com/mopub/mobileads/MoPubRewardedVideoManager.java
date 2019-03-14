@@ -651,7 +651,8 @@ public class MoPubRewardedVideoManager {
                 sInstance.cancelTimeouts(moPubId);
                 if (sInstance.mCustomEventAdListener != null) {
                     sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttemptSucceeded(
-                            moPubId, sInstance.rewardedAdsLoaders.getDspCreativeId(moPubId));
+                            moPubId, sInstance.rewardedAdsLoaders.getDspCreativeId(moPubId),
+                            sInstance.rewardedAdsLoaders.getLineItemId(moPubId));
                 }
                 sInstance.rewardedAdsLoaders.creativeDownloadSuccess(moPubId);
                 if (sInstance.mVideoListener != null) {

@@ -52,7 +52,7 @@ public class MoPubView extends FrameLayout {
 
     public interface BannerCustomEventAdListener {
         void onCustomEventBannerAttempted(MoPubView banner, String customEventClassName);
-        void onCustomEventBannerAttemptSucceeded(MoPubView banner, String creativeId);
+        void onCustomEventBannerAttemptSucceeded(MoPubView banner, String creativeId, String lineItemId);
         void onCustomEventBannerFailed(MoPubView banner, MoPubErrorCode errorCode);
     }
 
@@ -253,16 +253,28 @@ public class MoPubView extends FrameLayout {
         }
     }
 
+    private String getCreativeId() {
+        String creativeId = "";
+        if (mAdViewController != null && mAdViewController.getAdReport() != null) {
+            creativeId = mAdViewController.getAdReport().getDspCreativeId();
+        }
+        return creativeId;
+    }
+
+    private String getLineItemId() {
+        String lineItemId = "";
+        if (mAdViewController != null && mAdViewController.getAdReport() != null) {
+            lineItemId = mAdViewController.getAdReport().getLineItemId();
+        }
+        return lineItemId;
+    }
+
     protected void adLoaded() {
         MoPubLog.log(LOAD_SUCCESS);
 
         if (mBannerCustomEventAdListener != null) {
-            String creativeId = "";
-            if (mAdViewController != null && mAdViewController.getAdReport() != null) {
-                creativeId = mAdViewController.getAdReport().getDspCreativeId();
-            }
             mBannerCustomEventAdListener.onCustomEventBannerAttemptSucceeded(this,
-                    creativeId);
+                    getCreativeId(), getLineItemId());
         }
         if (mBannerAdListener != null) {
             mBannerAdListener.onBannerLoaded(this);
