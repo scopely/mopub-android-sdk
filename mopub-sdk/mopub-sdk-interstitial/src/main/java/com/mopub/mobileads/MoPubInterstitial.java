@@ -428,7 +428,7 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
         if (mInterstitialCustomEventAdListener != null) {
             mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this,
-                    getCreativeId(), getLineItemId());
+                    getCreativeId());
         }
 
         attemptStateTransition(READY);
@@ -549,7 +549,7 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
             MoPubLog.log(CUSTOM, "Loading custom event interstitial adapter.");
             if (mInterstitialCustomEventAdListener != null) {
                 mInterstitialCustomEventAdListener.onCustomEventInterstitialAttempted(
-                        MoPubInterstitial.this, customEventClassName);
+                        MoPubInterstitial.this, customEventClassName, getLineItemId());
             }
 
             mCustomEventInterstitialAdapter = CustomEventInterstitialAdapterFactory.create(
