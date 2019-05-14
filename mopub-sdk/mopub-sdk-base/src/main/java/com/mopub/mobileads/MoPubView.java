@@ -51,7 +51,7 @@ public class MoPubView extends FrameLayout {
     }
 
     public interface BannerCustomEventAdListener {
-        void onCustomEventBannerAttempted(MoPubView banner, String customEventClassName);
+        void onCustomEventBannerAttempted(MoPubView banner, String customEventClassName, String lineItemId);
         void onCustomEventBannerAttemptSucceeded(MoPubView banner, String creativeId);
         void onCustomEventBannerFailed(MoPubView banner, MoPubErrorCode errorCode);
     }
@@ -194,7 +194,8 @@ public class MoPubView extends FrameLayout {
 
         MoPubLog.log(CUSTOM, "Loading custom event adapter.");
         if (mBannerCustomEventAdListener != null) {
-            mBannerCustomEventAdListener.onCustomEventBannerAttempted(this, customEventClassName);
+            mBannerCustomEventAdListener.onCustomEventBannerAttempted(this, customEventClassName,
+                    getLineItemId());
         }
 
         if (Reflection.classFound(CUSTOM_EVENT_BANNER_ADAPTER_FACTORY)) {
@@ -254,15 +255,27 @@ public class MoPubView extends FrameLayout {
         }
     }
 
+    private String getCreativeId() {
+        String creativeId = "";
+        if (mAdViewController != null && mAdViewController.getAdReport() != null) {
+            creativeId = mAdViewController.getAdReport().getDspCreativeId();
+        }
+        return creativeId;
+    }
+
+    private String getLineItemId() {
+        String lineItemId = "";
+        if (mAdViewController != null && mAdViewController.getAdReport() != null) {
+            lineItemId = mAdViewController.getAdReport().getLineItemId();
+        }
+        return lineItemId;
+    }
+
     protected void adLoaded() {
         MoPubLog.log(LOAD_SUCCESS);
         if (mBannerCustomEventAdListener != null) {
-            String creativeId = "";
-            if (mAdViewController != null && mAdViewController.getAdReport() != null) {
-                creativeId = mAdViewController.getAdReport().getDspCreativeId();
-            }
             mBannerCustomEventAdListener.onCustomEventBannerAttemptSucceeded(this,
-                    creativeId);
+                    getCreativeId());
         }
 
         if (mBannerAdListener != null) {

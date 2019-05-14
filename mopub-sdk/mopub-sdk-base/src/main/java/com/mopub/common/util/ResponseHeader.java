@@ -14,6 +14,7 @@ public enum ResponseHeader {
     CUSTOM_EVENT_NAME("x-custom-event-class-name"),
     CREATIVE_ID("x-creativeid"),
     DSP_CREATIVE_ID("x-dspcreativeid"),
+    LINE_ITEM_ID("x-adgroupid"),
     FAIL_URL("x-next-url"),
     FULL_AD_TYPE("x-fulladtype"),
     HEIGHT("x-height"),

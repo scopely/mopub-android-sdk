@@ -537,7 +537,7 @@ public class MoPubRewardedVideoManager {
                     "Loading custom event with class name %s", customEventClassName));
             if(sInstance.mCustomEventAdListener != null) {
                 sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttempted(adUnitId,
-                        customEventClassName);
+                        customEventClassName, sInstance.rewardedAdsLoaders.getLineItemId(adUnitId));
             }
             customEvent.loadCustomEvent(mainActivity, localExtras, serverExtras);
 
