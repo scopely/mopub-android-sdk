@@ -20,15 +20,11 @@ public class CustomEventInterstitialFactory {
         instance = factory;
     }
 
-    public CustomEventInterstitial internalCreate(String className) throws Exception {
+    protected CustomEventInterstitial internalCreate(String className) throws Exception {
         Class<? extends CustomEventInterstitial> interstitialClass = Class.forName(className)
                 .asSubclass(CustomEventInterstitial.class);
         Constructor<?> interstitialConstructor = interstitialClass.getDeclaredConstructor((Class[]) null);
         interstitialConstructor.setAccessible(true);
         return (CustomEventInterstitial) interstitialConstructor.newInstance();
-    }
-
-    public static CustomEventInterstitialFactory getInstance() {
-        return instance;
     }
 }

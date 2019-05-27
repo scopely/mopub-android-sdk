@@ -30,7 +30,7 @@ public class TestCustomEventBannerAdapterFactory extends CustomEventBannerAdapte
     }
 
     @Override
-    public CustomEventBannerAdapter internalCreate(@NonNull final MoPubView moPubView,
+    protected CustomEventBannerAdapter internalCreate(@NonNull final MoPubView moPubView,
             @NonNull final String className,
             @NonNull final Map<String, String> serverExtras,
             final long broadcastIdentifier,

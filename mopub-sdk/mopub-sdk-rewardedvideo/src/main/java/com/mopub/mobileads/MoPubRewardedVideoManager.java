@@ -226,7 +226,7 @@ public class MoPubRewardedVideoManager {
         }
     }
 
-    public static void setAnalyticsHook(@Nullable RewardedVideoCustomEventAdListener listener) {
+    public static void setVideoCustomListener(@Nullable RewardedVideoCustomEventAdListener listener) {
         if (sInstance != null) {
             sInstance.mCustomEventAdListener = listener;
         } else {
@@ -939,7 +939,7 @@ public class MoPubRewardedVideoManager {
     @Deprecated
     @VisibleForTesting
     @Nullable
-    public static RewardedAdsLoaders getAdRequestStatusMapping() {
+    static RewardedAdsLoaders getAdRequestStatusMapping() {
         if (sInstance != null) {
             return sInstance.rewardedAdsLoaders;
         }

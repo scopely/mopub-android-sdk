@@ -13,7 +13,7 @@ public class TestCustomEventInterstitialFactory extends CustomEventInterstitialF
     private CustomEventInterstitial instance = mock(CustomEventInterstitial.class);
 
     @Override
-    public CustomEventInterstitial internalCreate(String className) {
+    protected CustomEventInterstitial internalCreate(String className) {
         return instance;
     }
 }
