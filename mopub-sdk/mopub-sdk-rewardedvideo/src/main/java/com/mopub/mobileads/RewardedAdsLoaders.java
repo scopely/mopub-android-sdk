@@ -146,6 +146,16 @@ class RewardedAdsLoaders {
         return loaderRewardedVideo.getLastDeliveredResponse().getDspCreativeId();
     }
 
+    String getLineItemId(String adUnitId) {
+        AdLoaderRewardedVideo loaderRewardedVideo = mAdUnitToAdLoader.get(adUnitId);
+        if (loaderRewardedVideo == null ||
+                loaderRewardedVideo.getLastDeliveredResponse() == null) {
+            return "";
+        }
+
+        return loaderRewardedVideo.getLastDeliveredResponse().getLineItemId();
+    }
+
     @Deprecated
     @VisibleForTesting
     void clearMapping() {
