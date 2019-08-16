@@ -74,6 +74,8 @@ public class AdResponse implements Serializable {
     private final Integer mRefreshTimeMillis;
     @Nullable
     private final String mDspCreativeId;
+    @Nullable
+    private final String mLineItemId;
 
     @Nullable
     private final String mResponseBody;
@@ -117,6 +119,7 @@ public class AdResponse implements Serializable {
         mAdTimeoutDelayMillis = builder.adTimeoutDelayMillis;
         mRefreshTimeMillis = builder.refreshTimeMillis;
         mDspCreativeId = builder.dspCreativeId;
+        mLineItemId = builder.lineItemId;
         mResponseBody = builder.responseBody;
         mJsonBody = builder.jsonBody;
         mCustomEventClassName = builder.customEventClassName;
@@ -263,6 +266,11 @@ public class AdResponse implements Serializable {
     }
 
     @Nullable
+    public String getLineItemId() {
+        return mLineItemId;
+    }
+
+    @Nullable
     public String getCustomEventClassName() {
         return mCustomEventClassName;
     }
@@ -293,6 +301,7 @@ public class AdResponse implements Serializable {
                 .setImpressionData(mImpressionData)
                 .setClickTrackingUrl(mClickTrackingUrl)
                 .setImpressionTrackingUrls(mImpressionTrackingUrls)
+                .setLineItemId(mLineItemId)
                 .setFailoverUrl(mFailoverUrl)
                 .setBeforeLoadUrl(mBeforeLoadUrl)
                 .setAfterLoadUrls(mAfterLoadUrls)
@@ -337,6 +346,7 @@ public class AdResponse implements Serializable {
         private Integer adTimeoutDelayMillis;
         private Integer refreshTimeMillis;
         private String dspCreativeId;
+        private String lineItemId;
 
         private String responseBody;
         private JSONObject jsonBody;
@@ -468,6 +478,11 @@ public class AdResponse implements Serializable {
 
         public Builder setDspCreativeId(@Nullable final String dspCreativeId) {
             this.dspCreativeId = dspCreativeId;
+            return this;
+        }
+
+        public Builder setLineItemId(@Nullable final String lineItemId) {
+            this.lineItemId = lineItemId;
             return this;
         }
 

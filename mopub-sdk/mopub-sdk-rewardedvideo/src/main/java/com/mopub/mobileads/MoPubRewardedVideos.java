@@ -50,6 +50,11 @@ public class MoPubRewardedVideos {
     }
 
     @ReflectionTarget
+    public static void setRewardedVideoCustomEventAdListener(@Nullable RewardedVideoCustomEventAdListener listener) {
+        MoPubRewardedVideoManager.setVideoCustomListener(listener);
+    }
+
+    @ReflectionTarget
     public static void loadRewardedVideo(@NonNull String adUnitId,
             @Nullable MediationSettings... mediationSettings) {
         Preconditions.checkNotNull(adUnitId);
