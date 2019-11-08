@@ -521,11 +521,7 @@ public class MoPubView extends FrameLayout {
     public BannerAdListener getBannerAdListener() {
         return mBannerAdListener;
     }
-
-    public void setBannerCustomEventAdListener(BannerCustomEventAdListener listener) {
-        mBannerCustomEventAdListener = listener;
-    }
-
+    
     public void setLocalExtras(Map<String, Object> localExtras) {
         if (mAdViewController != null) mAdViewController.setLocalExtras(localExtras);
     }
