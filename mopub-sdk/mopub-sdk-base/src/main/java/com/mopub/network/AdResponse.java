@@ -1,11 +1,11 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.network;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.MoPub.BrowserAgent;
 import com.mopub.common.Preconditions;
@@ -15,7 +15,6 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -47,6 +46,8 @@ public class AdResponse implements Serializable {
     private final boolean mShouldRewardOnClick;
 
     @Nullable
+    private final ImpressionData mImpressionData;
+    @Nullable
     private final String mClickTrackingUrl;
     @NonNull
     private final List<String> mImpressionTrackingUrls;
@@ -73,6 +74,8 @@ public class AdResponse implements Serializable {
     private final Integer mRefreshTimeMillis;
     @Nullable
     private final String mDspCreativeId;
+    @Nullable
+    private final String mLineItemId;
 
     @Nullable
     private final String mResponseBody;
@@ -102,6 +105,7 @@ public class AdResponse implements Serializable {
         mRewardedDuration = builder.rewardedDuration;
         mShouldRewardOnClick = builder.shouldRewardOnClick;
 
+        mImpressionData = builder.impressionData;
         mClickTrackingUrl = builder.clickTrackingUrl;
         mImpressionTrackingUrls = builder.impressionTrackingUrls;
         mFailoverUrl = builder.failoverUrl;
@@ -115,6 +119,7 @@ public class AdResponse implements Serializable {
         mAdTimeoutDelayMillis = builder.adTimeoutDelayMillis;
         mRefreshTimeMillis = builder.refreshTimeMillis;
         mDspCreativeId = builder.dspCreativeId;
+        mLineItemId = builder.lineItemId;
         mResponseBody = builder.responseBody;
         mJsonBody = builder.jsonBody;
         mCustomEventClassName = builder.customEventClassName;
@@ -187,6 +192,11 @@ public class AdResponse implements Serializable {
     }
 
     @Nullable
+    public ImpressionData getImpressionData() {
+        return mImpressionData;
+    }
+
+    @Nullable
     public String getClickTrackingUrl() {
         return mClickTrackingUrl;
     }
@@ -256,6 +266,11 @@ public class AdResponse implements Serializable {
     }
 
     @Nullable
+    public String getLineItemId() {
+        return mLineItemId;
+    }
+
+    @Nullable
     public String getCustomEventClassName() {
         return mCustomEventClassName;
     }
@@ -283,8 +298,10 @@ public class AdResponse implements Serializable {
                 .setRewardedVideoCompletionUrl(mRewardedVideoCompletionUrl)
                 .setRewardedDuration(mRewardedDuration)
                 .setShouldRewardOnClick(mShouldRewardOnClick)
+                .setImpressionData(mImpressionData)
                 .setClickTrackingUrl(mClickTrackingUrl)
                 .setImpressionTrackingUrls(mImpressionTrackingUrls)
+                .setLineItemId(mLineItemId)
                 .setFailoverUrl(mFailoverUrl)
                 .setBeforeLoadUrl(mBeforeLoadUrl)
                 .setAfterLoadUrls(mAfterLoadUrls)
@@ -314,6 +331,7 @@ public class AdResponse implements Serializable {
         private Integer rewardedDuration;
         private boolean shouldRewardOnClick;
 
+        private ImpressionData impressionData;
         private String clickTrackingUrl;
         private List<String> impressionTrackingUrls = new ArrayList<>();
         private String failoverUrl;
@@ -328,6 +346,7 @@ public class AdResponse implements Serializable {
         private Integer adTimeoutDelayMillis;
         private Integer refreshTimeMillis;
         private String dspCreativeId;
+        private String lineItemId;
 
         private String responseBody;
         private JSONObject jsonBody;
@@ -387,6 +406,11 @@ public class AdResponse implements Serializable {
 
         public Builder setShouldRewardOnClick(final boolean shouldRewardOnClick) {
             this.shouldRewardOnClick = shouldRewardOnClick;
+            return this;
+        }
+
+        public Builder setImpressionData(@Nullable ImpressionData impressionData) {
+            this.impressionData = impressionData;
             return this;
         }
 
@@ -454,6 +478,11 @@ public class AdResponse implements Serializable {
 
         public Builder setDspCreativeId(@Nullable final String dspCreativeId) {
             this.dspCreativeId = dspCreativeId;
+            return this;
+        }
+
+        public Builder setLineItemId(@Nullable final String lineItemId) {
+            this.lineItemId = lineItemId;
             return this;
         }
 

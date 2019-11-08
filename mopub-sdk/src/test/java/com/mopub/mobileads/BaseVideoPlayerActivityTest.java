@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 
+import com.mopub.common.CreativeOrientation;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.common.util.Utils;
 
@@ -16,7 +17,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
 import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
@@ -32,17 +32,18 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 @RunWith(SdkTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class BaseVideoPlayerActivityTest {
     private static final String MRAID_VIDEO_URL = "https://mraidVideo";
 
     private long testBroadcastIdentifier;
     private VastVideoConfig mVastVideoConfig;
+    private CreativeOrientation mOrientation;
 
     @Before
     public void setup() throws Exception {
         mVastVideoConfig = mock(VastVideoConfig.class, withSettings().serializable());
         testBroadcastIdentifier = 1234;
+        mOrientation = CreativeOrientation.DEVICE;
     }
 
     @Test
@@ -54,7 +55,7 @@ public class BaseVideoPlayerActivityTest {
     @Test
     public void startVast_shouldStartMraidVideoPlayerActivity() throws Exception {
         startVast(Robolectric.buildActivity(Activity.class).create().get(), mVastVideoConfig,
-                testBroadcastIdentifier);
+                testBroadcastIdentifier, mOrientation);
         assertVastVideoPlayerActivityStarted(MraidVideoPlayerActivity.class, mVastVideoConfig,
                 testBroadcastIdentifier);
     }

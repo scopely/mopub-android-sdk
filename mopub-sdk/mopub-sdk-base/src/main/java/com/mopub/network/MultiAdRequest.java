@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,8 +6,8 @@ package com.mopub.network;
 
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.AdFormat;
 import com.mopub.common.MoPub;
@@ -18,6 +18,8 @@ import com.mopub.volley.DefaultRetryPolicy;
 import com.mopub.volley.NetworkResponse;
 import com.mopub.volley.Response;
 import com.mopub.volley.toolbox.HttpHeaderParser;
+
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.CUSTOM;
 
 /**
  * Volley request class helper to support ad requests specifics
@@ -77,7 +79,7 @@ public class MultiAdRequest extends MoPubRequest<MultiAdResponse> {
     @NonNull
     private static String clearUrlIfSdkNotInitialized(@NonNull final String url) {
         if (MoPub.getPersonalInformationManager() == null || !MoPub.isSdkInitialized()) {
-            MoPubLog.e("Make sure to call MoPub#initializeSdk before loading an ad.");
+            MoPubLog.log(CUSTOM, "Make sure to call MoPub#initializeSdk before loading an ad.");
             return "";
         }
         return url;

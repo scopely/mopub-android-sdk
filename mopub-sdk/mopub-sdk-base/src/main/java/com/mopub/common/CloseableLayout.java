@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -8,8 +8,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.StateListDrawable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;

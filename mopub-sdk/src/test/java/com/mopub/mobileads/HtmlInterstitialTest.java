@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,6 +6,7 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Intent;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.mobileads.test.support.TestHtmlInterstitialWebViewFactory;
@@ -15,9 +16,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.support.v4.ShadowLocalBroadcastManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +36,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @RunWith(SdkTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class HtmlInterstitialTest extends ResponseBodyInterstitialTest {
     private CustomEventInterstitialListener customEventInterstitialListener;
     private Activity context;
@@ -88,7 +86,6 @@ public class HtmlInterstitialTest extends ResponseBodyInterstitialTest {
         subject.showInterstitial();
 
         Intent nextStartedActivity = ShadowApplication.getInstance().getNextStartedActivity();
-        assertThat(nextStartedActivity.getStringExtra(HTML_RESPONSE_BODY_KEY)).isEqualTo(expectedResponse);
         assertThat(nextStartedActivity.getStringExtra(CLICKTHROUGH_URL_KEY)).isNull();
         assertThat(nextStartedActivity.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK).isNotEqualTo(0);
         assertThat(nextStartedActivity.getComponent().getClassName()).isEqualTo("com.mopub.mobileads.MoPubActivity");
@@ -102,7 +99,6 @@ public class HtmlInterstitialTest extends ResponseBodyInterstitialTest {
         subject.showInterstitial();
 
         Intent nextStartedActivity = ShadowApplication.getInstance().getNextStartedActivity();
-        assertThat(nextStartedActivity.getStringExtra(HTML_RESPONSE_BODY_KEY)).isEqualTo(expectedResponse);
         assertThat(nextStartedActivity.getStringExtra(CLICKTHROUGH_URL_KEY)).isEqualTo("clickthroughUrl");
         assertThat(nextStartedActivity.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK).isNotEqualTo(0);
         assertThat(nextStartedActivity.getComponent().getClassName()).isEqualTo("com.mopub.mobileads.MoPubActivity");
@@ -113,12 +109,12 @@ public class HtmlInterstitialTest extends ResponseBodyInterstitialTest {
         subject.loadInterstitial(context, customEventInterstitialListener, localExtras, serverExtras);
 
         Intent intent = getIntentForActionAndIdentifier(ACTION_INTERSTITIAL_SHOW, broadcastIdentifier);
-        ShadowLocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 
         verify(customEventInterstitialListener).onInterstitialShown();
 
         intent = getIntentForActionAndIdentifier(ACTION_INTERSTITIAL_DISMISS, broadcastIdentifier);
-        ShadowLocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 
         verify(customEventInterstitialListener).onInterstitialDismissed();
     }
@@ -130,12 +126,12 @@ public class HtmlInterstitialTest extends ResponseBodyInterstitialTest {
 
         Intent intent;
         intent = new Intent(ACTION_INTERSTITIAL_SHOW);
-        ShadowLocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 
         verify(customEventInterstitialListener, never()).onInterstitialShown();
 
         intent = new Intent(ACTION_INTERSTITIAL_DISMISS);
-        ShadowLocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 
         verify(customEventInterstitialListener, never()).onInterstitialDismissed();
     }

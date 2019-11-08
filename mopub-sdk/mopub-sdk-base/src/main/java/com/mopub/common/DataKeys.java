@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -18,6 +18,7 @@ public class DataKeys {
     public static final String AD_UNIT_ID_KEY = "com_mopub_ad_unit_id";
     public static final String AD_WIDTH = "com_mopub_ad_width";
     public static final String AD_HEIGHT = "com_mopub_ad_height";
+    public static final String ADUNIT_FORMAT = "adunit_format";
 
     // Banner imp tracking fields
     public static final String BANNER_IMPRESSION_MIN_VISIBLE_DIPS = "banner-impression-min-pixels";

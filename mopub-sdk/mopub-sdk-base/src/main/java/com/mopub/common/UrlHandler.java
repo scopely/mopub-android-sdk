@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,8 +6,8 @@ package com.mopub.common;
 
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.logging.MoPubLog;
@@ -17,6 +17,7 @@ import com.mopub.exceptions.IntentNotResolvableException;
 import java.util.EnumSet;
 
 import static com.mopub.common.UrlResolutionTask.UrlResolutionListener;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
 import static com.mopub.network.TrackingRequest.makeTrackingHttpRequest;
 
 /**
@@ -58,6 +59,7 @@ public class UrlHandler {
         void onFinishLoad();
         void onClose();
         void onFailLoad();
+        void onCrash();
     }
 
     /**
@@ -171,6 +173,8 @@ public class UrlHandler {
         @Override public void onClose() { }
 
         @Override public void onFailLoad() { }
+
+        @Override public void onCrash() { }
     };
 
     @NonNull
@@ -323,7 +327,7 @@ public class UrlHandler {
                     }
                     return true;
                 } catch (IntentNotResolvableException e) {
-                    MoPubLog.d(e.getMessage(), e);
+                    MoPubLog.log(ERROR, e.getMessage(), e);
                     lastFailedUrlAction = urlAction;
                     // continue trying to match...
                 }
@@ -341,7 +345,7 @@ public class UrlHandler {
             urlAction = UrlAction.NOOP;
         }
 
-        MoPubLog.d(message, throwable);
+        MoPubLog.log(ERROR, message, throwable);
         mResultActions.urlHandlingFailed(url, urlAction);
     }
 

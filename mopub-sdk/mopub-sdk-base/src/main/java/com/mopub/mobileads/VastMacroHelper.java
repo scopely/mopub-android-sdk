@@ -1,11 +1,11 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.mobileads;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.Preconditions;
@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
 
 /**
  * Handles macro substitution with actual data.
@@ -86,7 +88,7 @@ public class VastMacroHelper {
             try {
                 assetUri = URLEncoder.encode(assetUri, "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                MoPubLog.w("Failed to encode url", e);
+                MoPubLog.log(ERROR, "Failed to encode url", e);
             }
             mMacroDataMap.put(VastMacro.ASSETURI, assetUri);
         }

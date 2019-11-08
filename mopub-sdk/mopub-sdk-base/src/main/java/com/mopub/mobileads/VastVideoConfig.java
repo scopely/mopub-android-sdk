@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -10,8 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.Constants;
@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 import static com.mopub.network.TrackingRequest.makeVastTrackingHttpRequest;
 
 public class VastVideoConfig implements Serializable {
@@ -67,7 +68,6 @@ public class VastVideoConfig implements Serializable {
     @Nullable private String mCustomCtaText;
     @Nullable private String mCustomSkipText;
     @Nullable private String mCustomCloseIconUrl;
-    @NonNull private DeviceUtils.ForceOrientation mCustomForceOrientation = DeviceUtils.ForceOrientation.FORCE_LANDSCAPE; // Default is forcing landscape
     @Nullable private VideoViewabilityTracker mVideoViewabilityTracker;
     // Viewability
     @NonNull private final Map<String, String> mExternalViewabilityTrackers;
@@ -78,13 +78,6 @@ public class VastVideoConfig implements Serializable {
     private String mDspCreativeId;
     private String mPrivacyInformationIconImageUrl;
     private String mPrivacyInformationIconClickthroughUrl;
-
-    /**
-     * Flag to indicate if the VAST xml document has explicitly set the orientation as opposed to
-     * using the default.
-     */
-    private boolean mIsForceOrientationSet;
-
 
     public VastVideoConfig() {
         mImpressionTrackers = new ArrayList<VastTracker>();
@@ -253,7 +246,7 @@ public class VastVideoConfig implements Serializable {
                     break;
                 case UNKNOWN:
                 default:
-                    MoPubLog.d("Encountered unknown video tracking event: " + eventName);
+                    MoPubLog.log(CUSTOM, "Encountered unknown video tracking event: " + eventName);
             }
         }
     }
@@ -319,13 +312,6 @@ public class VastVideoConfig implements Serializable {
     public void setCustomCloseIconUrl(@Nullable final String customCloseIconUrl) {
         if (customCloseIconUrl != null) {
             mCustomCloseIconUrl = customCloseIconUrl;
-        }
-    }
-
-    public void setCustomForceOrientation(@Nullable final DeviceUtils.ForceOrientation customForceOrientation) {
-        if (customForceOrientation != null && customForceOrientation != DeviceUtils.ForceOrientation.UNDEFINED) {
-            mCustomForceOrientation = customForceOrientation;
-            mIsForceOrientationSet = true;
         }
     }
 
@@ -486,10 +472,6 @@ public class VastVideoConfig implements Serializable {
         return mMoatImpressionPixels;
     }
 
-    public boolean isCustomForceOrientationSet() {
-        return mIsForceOrientationSet;
-    }
-
     /**
      * Returns whether or not there is a companion ad set. There must be both a landscape and a
      * portrait companion ad set for this to be true.
@@ -498,15 +480,6 @@ public class VastVideoConfig implements Serializable {
      */
     public boolean hasCompanionAd() {
         return mLandscapeVastCompanionAdConfig != null && mPortraitVastCompanionAdConfig != null;
-    }
-
-    /**
-     * Get custom force orientation
-     * @return ForceOrientation enum (default is FORCE_LANDSCAPE)
-     */
-    @NonNull
-    public DeviceUtils.ForceOrientation getCustomForceOrientation() {
-        return mCustomForceOrientation;
     }
 
     /**
@@ -641,10 +614,10 @@ public class VastVideoConfig implements Serializable {
                                     Intents.startActivity(context, intent);
                                 }
                             } catch (ActivityNotFoundException e) {
-                                MoPubLog.d("Activity " + clazz.getName() + " not found. Did you " +
+                                MoPubLog.log(CUSTOM, "Activity " + clazz.getName() + " not found. Did you " +
                                         "declare it in your AndroidManifest.xml?");
                             } catch (IntentNotResolvableException e) {
-                                MoPubLog.d("Activity " + clazz.getName() + " not found. Did you " +
+                                MoPubLog.log(CUSTOM, "Activity " + clazz.getName() + " not found. Did you " +
                                         "declare it in your AndroidManifest.xml?");
                             }
                         }
@@ -824,7 +797,7 @@ public class VastVideoConfig implements Serializable {
                     float percentage = Float.parseFloat(mSkipOffset.replace("%", "")) / 100f;
                     skipOffsetMilliseconds = Math.round(videoDuration * percentage);
                 } else {
-                    MoPubLog.d(
+                    MoPubLog.log(CUSTOM,
                             String.format("Invalid VAST skipoffset format: %s", mSkipOffset));
                     return null;
                 }
@@ -837,7 +810,7 @@ public class VastVideoConfig implements Serializable {
                     }
                 }
             } catch (NumberFormatException e) {
-                MoPubLog.d(String.format("Failed to parse skipoffset %s", mSkipOffset));
+                MoPubLog.log(CUSTOM, String.format("Failed to parse skipoffset %s", mSkipOffset));
             }
         }
         return null;

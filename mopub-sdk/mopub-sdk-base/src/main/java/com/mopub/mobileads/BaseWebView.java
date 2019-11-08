@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -10,7 +10,7 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.Gravity;
 import android.view.WindowManager;
 import android.webkit.WebSettings;

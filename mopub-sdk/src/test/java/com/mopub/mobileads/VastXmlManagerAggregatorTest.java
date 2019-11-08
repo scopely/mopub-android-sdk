@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -44,7 +44,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(SdkTestRunner.class)
-@Config(constants = BuildConfig.class, qualifiers = "w480dp-h800dp", shadows = {ShadowMoPubHttpUrlConnection.class})
+@Config(qualifiers = "w480dp-h800dp", shadows = {ShadowMoPubHttpUrlConnection.class})
 public class VastXmlManagerAggregatorTest {
     // Default portrait screen width is 480, height is 800
     private static final int DIM_SHORT = 480;
@@ -364,12 +364,11 @@ public class VastXmlManagerAggregatorTest {
         }).when(vastXmlManagerAggregatorListener).onAggregationComplete(any(VastVideoConfig.class));
 
         // Always assume landscape (where width > height) since videos will always be played in this orientation
-        int screenWidth = DIM_LONG;
-        int screenHeight = DIM_SHORT;
+        final int screenWidth = DIM_LONG;
+        final int screenHeight = DIM_SHORT;
         double screenAspectRatio = (double) screenWidth / screenHeight;
-        int screenArea = screenWidth * screenHeight;
         subject = new VastXmlManagerAggregator(vastXmlManagerAggregatorListener, screenAspectRatio,
-                screenArea, context);
+                screenWidth, context);
     }
 
     // NOTE most of the functionality of this class is tested through VastManagerTest

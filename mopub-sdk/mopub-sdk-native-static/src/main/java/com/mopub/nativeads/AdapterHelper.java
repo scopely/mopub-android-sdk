@@ -1,12 +1,12 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.nativeads;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -15,6 +15,8 @@ import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 
 import java.lang.ref.WeakReference;
+
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 
 /**
  * Use {@link com.mopub.nativeads.MoPubAdAdapter} or
@@ -47,7 +49,7 @@ public final class AdapterHelper {
             @Nullable final ViewBinder viewBinder) {
         final Context context = mContext.get();
         if (context == null) {
-            MoPubLog.w("Weak reference to Context in"
+            MoPubLog.log(CUSTOM, "Weak reference to Context in"
                     + " AdapterHelper became null. Returning empty view.");
             return new View(mApplicationContext);
         }

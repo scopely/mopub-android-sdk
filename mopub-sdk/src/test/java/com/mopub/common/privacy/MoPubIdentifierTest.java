@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -8,13 +8,13 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.common.GpsHelper;
 import com.mopub.common.SdkInitializationListener;
+import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.AsyncTasks;
 import com.mopub.common.util.Reflection;
-import com.mopub.mobileads.BuildConfig;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +30,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.util.concurrent.RoboExecutorService;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import java.util.Calendar;
@@ -41,10 +40,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
 @PowerMockIgnore({"org.mockito.*", "org.robolectric.*", "android.*", "org.json.*"})
 @PrepareForTest(GpsHelper.class)
 public class MoPubIdentifierTest {
@@ -61,6 +58,7 @@ public class MoPubIdentifierTest {
     private static final String AMAZON_AD_ID = "amazon_ad_id";
     private static final String TEST_IFA_ID = "test_ifa_id";
     public static final String TEST_MOPUB_ID = "test_mopub_id";
+    public static final String GOOGLE_AD_ID_DEBUG = "something_something_10ca1ad1abe1";
 
     @Before
     public void setup() {
@@ -266,18 +264,6 @@ public class MoPubIdentifierTest {
     }
 
     @Test
-    public void isPlayServiceAvailable_whenGoogleAvailable_shouldCallGpsHelper_shouldReturnTrue() {
-        subject = new MoPubIdentifier(context, idChangeListener);
-        assertThat(subject.isPlayServicesAvailable()).isFalse();
-
-        setupGooglePlayService(context, false);
-
-        assertThat(subject.isPlayServicesAvailable()).isTrue();
-        verifyStatic();
-        GpsHelper.isPlayServicesAvailable(any(Context.class));
-    }
-
-    @Test
     public void setAdvertisingInfo_whenCalledTwice_shouldCallInitializationListenerOnce_validateSavedAdvertisingIds() throws Exception {
         final AdvertisingId adId1 = new AdvertisingId("ifa1", "mopub1", false, Calendar.getInstance().getTimeInMillis());
         final AdvertisingId adId2 = new AdvertisingId("ifa2", "mopub2", false, Calendar.getInstance().getTimeInMillis());
@@ -446,12 +432,59 @@ public class MoPubIdentifierTest {
         assertThat(newId.isRotationRequired()).isFalse();
     }
 
+    @Test
+    public void rotateMoPubId_withDebugGAID_shouldSetLogLevelToDebug() throws Exception {
+        // Set log level to none and get value from MoPubLog
+        MoPubLog.setLogLevel(MoPubLog.LogLevel.NONE);
+        final MoPubLog.LogLevel beforeLogLevel = MoPubLog.getLogLevel();
+        setupGooglePlayServiceDebug(context, false);
+
+        ArgumentCaptor<AdvertisingId> oldIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
+        ArgumentCaptor<AdvertisingId> newIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
+
+        subject = new MoPubIdentifier(context, idChangeListener);
+
+        ShadowLooper.runUiThreadTasks();
+        verify(idChangeListener).onIdChanged(oldIdClientCaptor.capture(), newIdClientCaptor.capture());
+
+        // Get log level
+        final MoPubLog.LogLevel afterLogLevel = MoPubLog.getLogLevel();
+
+        assertThat(beforeLogLevel).isNotEqualTo(afterLogLevel);
+    }
+
+    @Test
+    public void rotateMoPubId_withoutDebugGAID_shouldNotSetLogLevel() throws Exception {
+        // Set log level to none and get value from MoPubLog
+        MoPubLog.setLogLevel(MoPubLog.LogLevel.NONE);
+        final MoPubLog.LogLevel beforeLogLevel = MoPubLog.getLogLevel();
+        setupGooglePlayService(context, false);
+
+        ArgumentCaptor<AdvertisingId> oldIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
+        ArgumentCaptor<AdvertisingId> newIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
+
+        subject = new MoPubIdentifier(context, idChangeListener);
+
+        ShadowLooper.runUiThreadTasks();
+        verify(idChangeListener).onIdChanged(oldIdClientCaptor.capture(), newIdClientCaptor.capture());
+
+        // Get log level
+        final MoPubLog.LogLevel afterLogLevel = MoPubLog.getLogLevel();
+
+        assertThat(beforeLogLevel).isEqualTo(afterLogLevel);
+    }
+
     // Unit tests utility functions
     public static void setupGooglePlayService(Context context, boolean limitAdTracking) {
         PowerMockito.mockStatic(GpsHelper.class);
-        PowerMockito.when(GpsHelper.isPlayServicesAvailable(context)).thenReturn(true);
         PowerMockito.when(GpsHelper.isLimitAdTrackingEnabled(context)).thenReturn(limitAdTracking);
         PowerMockito.when(GpsHelper.fetchAdvertisingInfoSync(context)).thenReturn(new GpsHelper.AdvertisingInfo(GOOGLE_AD_ID, limitAdTracking));
+    }
+
+    public static void setupGooglePlayServiceDebug(Context context, boolean limitAdTracking) {
+        PowerMockito.mockStatic(GpsHelper.class);
+        PowerMockito.when(GpsHelper.isLimitAdTrackingEnabled(context)).thenReturn(limitAdTracking);
+        PowerMockito.when(GpsHelper.fetchAdvertisingInfoSync(context)).thenReturn(new GpsHelper.AdvertisingInfo(GOOGLE_AD_ID_DEBUG, limitAdTracking));
     }
 
     public static void setupAmazonAdvertisingInfo(boolean limitAdTracking) {
@@ -480,7 +513,7 @@ public class MoPubIdentifierTest {
     }
 
     private static AdvertisingId writeExpiredAdvertisingInfoToSharedPreferences(Context context, boolean doNotTrack) throws Exception {
-        final long time = Calendar.getInstance().getTimeInMillis() - AdvertisingId.ROTATION_TIME_MS;
+        final long time = Calendar.getInstance().getTimeInMillis() - AdvertisingId.ONE_DAY_MS * 2;
         return writeAdvertisingInfoToSharedPreferences(context, doNotTrack, time);
     }
 

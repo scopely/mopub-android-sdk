@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -11,6 +11,8 @@ import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.common.util.ResponseHeader;
 import com.mopub.network.AdLoader;
 import com.mopub.network.AdResponse;
+import com.mopub.network.ImpressionListener;
+import com.mopub.network.ImpressionsEmitter;
 import com.mopub.network.MoPubNetworkError;
 import com.mopub.network.MoPubRequestQueue;
 import com.mopub.network.MultiAdRequest;
@@ -31,17 +33,16 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 
 import java.lang.reflect.Field;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SdkTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class AdLoaderRewardedVideoTest {
 
     @Mock
@@ -147,6 +148,29 @@ public class AdLoaderRewardedVideoTest {
 
         assertThat(request).isNotNull();
         assertThat(request.getUrl()).isEqualTo("impression_tracking_url");
+    }
+
+    @Test
+    public void trackImpression_shouldMakeImpressionDataCall() throws JSONException, MoPubNetworkError, NoSuchFieldException, IllegalAccessException {
+        JSONObject serverJson = createAdResponseJson();
+        byte[] body = serverJson.toString().getBytes();
+        NetworkResponse testResponse = new NetworkResponse(body);
+        MultiAdResponse multiAdResponse = new MultiAdResponse(activity, testResponse, AdFormat.BANNER, adUnitId);
+
+        // set subject MultiAdResponse
+        Field field = getPrivateField("mMultiAdResponse");
+        field.set(subject, multiAdResponse);
+
+        // validation for basic AdLoader
+        assertThat(subject.hasMoreAds()).isTrue();
+        subject.loadNextAd(null);
+
+        ImpressionListener listener = mock(ImpressionListener.class);
+        ImpressionsEmitter.addListener(listener);
+        // call tracking
+        subject.trackImpression(activity);
+
+        verify(listener).onImpression(adUnitId, null);
     }
 
     @Test

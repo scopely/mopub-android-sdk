@@ -1,11 +1,11 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.common;
 
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.mopub.common.privacy.AdvertisingId;
 import com.mopub.network.AdResponse;
@@ -71,6 +71,10 @@ public class AdReport implements Serializable {
 
     public String getDspCreativeId() {
         return mAdResponse.getDspCreativeId();
+    }
+
+    public String getLineItemId() {
+        return mAdResponse.getLineItemId();
     }
 
     private void appendKeyValue(StringBuilder parameters, String key, String value) {
