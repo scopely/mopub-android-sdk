@@ -571,7 +571,6 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
                 mInterstitialCustomEventAdListener.onCustomEventInterstitialAttempted(
                         MoPubInterstitial.this, customEventClassName, getLineItemId());
             }
-
             mCustomEventInterstitialAdapter = CustomEventInterstitialAdapterFactory.create(
                     MoPubInterstitial.this,
                     customEventClassName,

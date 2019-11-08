@@ -265,7 +265,6 @@ public class MoPubView extends FrameLayout {
         if (mBannerCustomEventAdListener != null) {
             mBannerCustomEventAdListener.onCustomEventBannerFailed(this, errorCode);
         }
-
         if (mAdViewController == null) {
             return false;
         }
@@ -291,7 +290,6 @@ public class MoPubView extends FrameLayout {
             mBannerCustomEventAdListener.onCustomEventBannerAttempted(this, customEventClassName,
                     getLineItemId());
         }
-
         if (Reflection.classFound(CUSTOM_EVENT_BANNER_ADAPTER_FACTORY)) {
             try {
                 final Class<?> adapterFactoryClass = Class.forName(CUSTOM_EVENT_BANNER_ADAPTER_FACTORY);
@@ -503,12 +501,21 @@ public class MoPubView extends FrameLayout {
         return (mAdViewController != null) ? mAdViewController.getAdHeight() : 0;
     }
 
+    @Nullable
+    public AdReport getAdReport() {
+        return mAdViewController != null ? mAdViewController.getAdReport() : null;
+    }
+
     public Activity getActivity() {
         return (Activity) mContext;
     }
 
     public void setBannerAdListener(BannerAdListener listener) {
         mBannerAdListener = listener;
+    }
+
+    public void setBannerCustomEventAdListener(BannerCustomEventAdListener listener) {
+        mBannerCustomEventAdListener = listener;
     }
 
     public BannerAdListener getBannerAdListener() {

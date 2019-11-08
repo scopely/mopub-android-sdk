@@ -190,8 +190,8 @@ public class AdViewController {
 
     @VisibleForTesting
     void loadCustomEvent(@Nullable final MoPubView moPubView,
-            @Nullable final String customEventClassName,
-            @NonNull final Map<String, String> serverExtras) {
+                         @Nullable final String customEventClassName,
+                         @NonNull final Map<String, String> serverExtras) {
         Preconditions.checkNotNull(serverExtras);
 
         if (moPubView == null) {
@@ -205,7 +205,7 @@ public class AdViewController {
     @VisibleForTesting
     @NonNull
     static MoPubErrorCode getErrorCodeFromVolleyError(@NonNull final VolleyError error,
-            @Nullable final Context context) {
+                                                      @Nullable final Context context) {
         final NetworkResponse networkResponse = error.networkResponse;
 
         // For MoPubNetworkErrors, networkResponse is null.
