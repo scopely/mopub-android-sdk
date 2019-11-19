@@ -686,9 +686,6 @@ public class MoPubRewardedVideoManager {
 
     public static <T extends CustomEventRewardedAd>
     void onRewardedVideoLoadFailure(@NonNull final Class<T> customEventClass, final String thirdPartyId, final MoPubErrorCode errorCode) {
-        if(sInstance.mCustomEventAdListener != null) {
-            sInstance.mCustomEventAdListener.onCustomEventRewardedVideoFailed(customEventClass.getSimpleName(), errorCode);
-        }
         postToInstance(new ForEachMoPubIdRunnable(customEventClass, thirdPartyId) {
             @Override
             protected void forEach(@NonNull final String moPubId) {
