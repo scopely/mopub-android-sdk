@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-
+yes | ~/Library/Android/sdk/tools/bin/sdkmanager --licenses
 #
 # Copyright 2015 the original author or authors.
 #
