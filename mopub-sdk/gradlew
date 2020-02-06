@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+yes | ~/Library/Android/sdk/tools/bin/sdkmanager --licenses
 ##############################################################################
 ##
 ##  Gradle start up script for UN*X
