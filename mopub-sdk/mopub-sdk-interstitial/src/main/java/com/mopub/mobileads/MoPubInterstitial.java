@@ -75,6 +75,7 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
     @NonNull private MoPubInterstitialView mInterstitialView;
     @Nullable private CustomEventInterstitialAdapter mCustomEventInterstitialAdapter;
     @Nullable private InterstitialAdListener mInterstitialAdListener;
+    @Nullable private InterstitialCustomEventAdListener mInterstitialCustomEventAdListener;
     @NonNull private Activity mActivity;
     @NonNull private Handler mHandler;
     @NonNull private final Runnable mAdExpiration;
@@ -366,6 +367,11 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
     }
 
     @NonNull
+    public MoPubInterstitialView getInterstitialView() {
+        return mInterstitialView;
+    }
+
+    @NonNull
     public Activity getActivity() {
         return mActivity;
     }
@@ -377,6 +383,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
     public void destroy() {
         attemptStateTransition(DESTROYED);
+    }
+
+    public void setInterstitialCustomEventAdListener(@Nullable final InterstitialCustomEventAdListener listener) {
+        mInterstitialCustomEventAdListener = listener;
     }
 
     public void setInterstitialAdListener(@Nullable final InterstitialAdListener listener) {
@@ -405,6 +415,26 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
         return mInterstitialView.getLocalExtras();
     }
 
+    private String getCreativeId() {
+        String creativeId = "";
+        if (mInterstitialView != null &&
+                mInterstitialView.getAdViewController() != null &&
+                mInterstitialView.getAdViewController().getAdReport() != null) {
+            creativeId = mInterstitialView.getAdViewController().getAdReport().getDspCreativeId();
+        }
+        return creativeId;
+    }
+
+    private String getLineItemId() {
+        String lineItemId = "";
+        if (mInterstitialView != null &&
+                mInterstitialView.getAdViewController() != null &&
+                mInterstitialView.getAdViewController().getAdReport() != null) {
+            lineItemId = mInterstitialView.getAdViewController().getAdReport().getLineItemId();
+        }
+        return lineItemId;
+    }
+
     /*
      * Implements CustomEventInterstitialAdapter.CustomEventInterstitialListener
      * Note: All callbacks should be no-ops if the interstitial has been destroyed
@@ -414,6 +444,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
     public void onCustomEventInterstitialLoaded() {
         if (isDestroyed()) {
             return;
+        }
+
+        if (mInterstitialCustomEventAdListener != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this, getCreativeId());
         }
 
         attemptStateTransition(READY);
@@ -433,6 +467,10 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
 
         if (!mInterstitialView.loadFailUrl(errorCode)) {
             attemptStateTransition(IDLE);
+        }
+
+        if (mInterstitialCustomEventAdListener != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialFailed(this, errorCode);
         }
     }
 
@@ -528,6 +566,11 @@ public class MoPubInterstitial implements CustomEventInterstitialAdapter.CustomE
             }
 
             MoPubLog.log(CUSTOM, "Loading custom event interstitial adapter.");
+
+            if (mInterstitialCustomEventAdListener != null) {
+                mInterstitialCustomEventAdListener.onCustomEventInterstitialAttempted(
+                        MoPubInterstitial.this, customEventClassName, getLineItemId());
+            }
 
             mCustomEventInterstitialAdapter = CustomEventInterstitialAdapterFactory.create(
                     MoPubInterstitial.this,
