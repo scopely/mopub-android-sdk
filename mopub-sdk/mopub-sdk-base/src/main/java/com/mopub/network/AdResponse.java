@@ -83,6 +83,8 @@ public class AdResponse implements Serializable {
     private final String mBannerImpressionMinVisibleMs;
     @Nullable
     private final String mDspCreativeId;
+    @Nullable
+    private final String mLineItemId;
 
     @Nullable
     private final String mResponseBody;
@@ -131,6 +133,7 @@ public class AdResponse implements Serializable {
         mBannerImpressionMinVisibleDips = builder.bannerImpressionMinVisibleDips;
         mBannerImpressionMinVisibleMs = builder.bannerImpressionMinVisibleMs;
         mDspCreativeId = builder.dspCreativeId;
+        mLineItemId = builder.lineItemId;
         mResponseBody = builder.responseBody;
         mJsonBody = builder.jsonBody;
         mBaseAdClassName = builder.customEventClassName;
@@ -293,6 +296,11 @@ public class AdResponse implements Serializable {
     }
 
     @Nullable
+    public String getLineItemId() {
+        return mLineItemId;
+    }
+
+    @Nullable
     @Deprecated
     public String getCustomEventClassName() {
         return getBaseAdClassName();
@@ -335,6 +343,7 @@ public class AdResponse implements Serializable {
                 .setImpressionData(mImpressionData)
                 .setClickTrackingUrl(mClickTrackingUrl)
                 .setImpressionTrackingUrls(mImpressionTrackingUrls)
+                .setLineItemId(mLineItemId)
                 .setFailoverUrl(mFailoverUrl)
                 .setBeforeLoadUrl(mBeforeLoadUrl)
                 .setAfterLoadUrls(mAfterLoadUrls)
@@ -385,6 +394,7 @@ public class AdResponse implements Serializable {
         private String bannerImpressionMinVisibleDips;
         private String bannerImpressionMinVisibleMs;
         private String dspCreativeId;
+        private String lineItemId;
 
         private String responseBody;
         private JSONObject jsonBody;
@@ -533,6 +543,11 @@ public class AdResponse implements Serializable {
 
         public Builder setDspCreativeId(@Nullable final String dspCreativeId) {
             this.dspCreativeId = dspCreativeId;
+            return this;
+        }
+
+        public Builder setLineItemId(@Nullable final String lineItemId) {
+            this.lineItemId = lineItemId;
             return this;
         }
 

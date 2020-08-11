@@ -72,6 +72,7 @@ public class MoPubInterstitial implements MoPubAd {
     @NonNull private Activity mActivity;
     @NonNull private Handler mHandler;
     @NonNull private volatile InterstitialState mCurrentInterstitialState;
+    @Nullable private InterstitialCustomEventAdListener mInterstitialCustomEventAdListener;
 
     public interface InterstitialAdListener {
         void onInterstitialLoaded(MoPubInterstitial interstitial);
@@ -79,6 +80,12 @@ public class MoPubInterstitial implements MoPubAd {
         void onInterstitialShown(MoPubInterstitial interstitial);
         void onInterstitialClicked(MoPubInterstitial interstitial);
         void onInterstitialDismissed(MoPubInterstitial interstitial);
+    }
+
+    public interface InterstitialCustomEventAdListener {
+        void onCustomEventInterstitialAttempted(MoPubInterstitial interstitial, String customEventClassName, String lineItemId);
+        void onCustomEventInterstitialAttemptSucceeded(MoPubInterstitial interstitial, String creativeId);
+        void onCustomEventInterstitialFailed(MoPubInterstitial interstitial, MoPubErrorCode errorCode);
     }
 
     public MoPubInterstitial(@NonNull final Activity activity, @NonNull final String adUnitId) {
@@ -322,6 +329,10 @@ public class MoPubInterstitial implements MoPubAd {
         attemptStateTransition(DESTROYED);
     }
 
+    public void setInterstitialCustomEventAdListener(@Nullable final InterstitialCustomEventAdListener listener) {
+        mInterstitialCustomEventAdListener = listener;
+    }
+
     public void setInterstitialAdListener(@Nullable final InterstitialAdListener listener) {
         mInterstitialAdListener = listener;
     }
@@ -344,6 +355,22 @@ public class MoPubInterstitial implements MoPubAd {
         }
     }
 
+    private String getCreativeId() {
+        String creativeId = "";
+        if (mAdViewController != null) {
+            creativeId = mAdViewController.getDspCreativeId();
+        }
+        return creativeId;
+    }
+
+    private String getLineItemId() {
+        String lineItemId = "";
+        if (mAdViewController != null ) {
+            lineItemId = mAdViewController.getLineItemId();
+        }
+        return lineItemId;
+    }
+
     @Override
     public void onAdLoaded() {
         if (isDestroyed()) {
@@ -359,9 +386,29 @@ public class MoPubInterstitial implements MoPubAd {
      */
 
     @Override
+    public boolean loadFailUrl(final MoPubErrorCode errorCode) {
+        if (mInterstitialCustomEventAdListener != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialFailed(this, errorCode);
+        }
+        return mAdViewController.loadFailUrl(errorCode);
+    }
+
+    @Override
+    public void loadBaseAd() {
+
+        if (mInterstitialCustomEventAdListener != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttempted(this, mAdViewController.mAdResponse.getBaseAdClassName(), getLineItemId());
+        }
+    }
+
+    @Override
     public void onAdLoadFailed(@NonNull MoPubErrorCode errorCode) {
         if (isDestroyed()) {
             return;
+        }
+
+        if (mInterstitialCustomEventAdListener != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this, getCreativeId());
         }
 
         MoPubLog.log(LOAD_FAILED, errorCode.getIntCode(), errorCode);
@@ -373,6 +420,8 @@ public class MoPubInterstitial implements MoPubAd {
 
     @Override
     public void onAdFailed(@NonNull final MoPubErrorCode errorCode) {
+
+
         if (isDestroyed()) {
             return;
         }

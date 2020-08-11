@@ -17,6 +17,7 @@ public enum ResponseHeader {
     CUSTOM_EVENT_NAME("x-custom-event-class-name"),
     CREATIVE_ID("x-creativeid"),
     DSP_CREATIVE_ID("x-dspcreativeid"),
+    LINE_ITEM_ID("x-adgroupid"),
     FAIL_URL("x-next-url"),
     FULL_AD_TYPE("x-fulladtype"),
     HEIGHT("x-height"),
@@ -90,6 +91,7 @@ public enum ResponseHeader {
 
     // Experiment keys
     VAST_CLICK_ENABLED("vast-click-enabled"),
+    VAST_VIDEO_PLAYER_VERSION("vast-player-version"),
 
     // Mraid Custom Close
     ALLOW_CUSTOM_CLOSE("allow-custom-close");

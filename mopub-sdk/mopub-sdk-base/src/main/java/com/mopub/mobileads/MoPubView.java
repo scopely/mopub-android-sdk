@@ -33,6 +33,8 @@ import com.mopub.mobileads.factories.AdViewControllerFactory;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM_WITH_THROWABLE;
+import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_NOT_FOUND;
+import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 import static java.lang.Math.ceil;
 
 public class MoPubView extends FrameLayout implements MoPubAd {
@@ -43,6 +45,12 @@ public class MoPubView extends FrameLayout implements MoPubAd {
         public void onBannerClicked(MoPubView banner);
         public void onBannerExpanded(MoPubView banner);
         public void onBannerCollapsed(MoPubView banner);
+    }
+
+    public interface BannerCustomEventAdListener {
+        void onCustomEventBannerAttempted(MoPubView banner, String customEventClassName, String lineItemId);
+        void onCustomEventBannerAttemptSucceeded(MoPubView banner, String creativeId);
+        void onCustomEventBannerFailed(MoPubView banner, MoPubErrorCode errorCode);
     }
 
     /**
@@ -114,6 +122,7 @@ public class MoPubView extends FrameLayout implements MoPubAd {
     private BroadcastReceiver mScreenStateReceiver;
     private MoPubView.MoPubAdSize mMoPubAdSize;
     private BannerAdListener mBannerAdListener;
+    protected BannerCustomEventAdListener mBannerCustomEventAdListener;
 
     public MoPubView(Context context) {
         this(context, null);
@@ -297,6 +306,10 @@ public class MoPubView extends FrameLayout implements MoPubAd {
         mBannerAdListener = listener;
     }
 
+    public void setBannerCustomEventAdListener(BannerCustomEventAdListener listener) {
+        mBannerCustomEventAdListener = listener;
+    }
+
     public BannerAdListener getBannerAdListener() {
         return mBannerAdListener;
     }
@@ -343,9 +356,19 @@ public class MoPubView extends FrameLayout implements MoPubAd {
         return mMoPubAdSize;
     }
 
-    void setWindowInsets(@NonNull final WindowInsets windowInsets) {
-        if (mAdViewController != null) {
-            mAdViewController.setWindowInsets(windowInsets);
+    @Override
+    public boolean loadFailUrl(final MoPubErrorCode errorCode) {
+        if (mBannerCustomEventAdListener != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerFailed(this, errorCode);
+        }
+        return mAdViewController.loadFailUrl(errorCode);
+    }
+
+    @Override
+    public void loadBaseAd() {
+
+        if (mBannerCustomEventAdListener != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerAttempted(this, mAdViewController.mAdResponse.getBaseAdClassName(), getLineItemId());
         }
     }
 
@@ -376,8 +399,28 @@ public class MoPubView extends FrameLayout implements MoPubAd {
         return null;
     }
 
+    private String getCreativeId() {
+        String creativeId = "";
+        if (mAdViewController != null) {
+            creativeId = mAdViewController.getDspCreativeId();
+        }
+        return creativeId;
+    }
+
+    private String getLineItemId() {
+        String lineItemId = "";
+        if (mAdViewController != null ) {
+            lineItemId = mAdViewController.getLineItemId();
+        }
+        return lineItemId;
+    }
+
     @Override
     public void onAdLoaded() {
+        if (mBannerCustomEventAdListener != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerAttemptSucceeded(this, getCreativeId());
+        }
+
         if (mAdViewController != null) {
             mAdViewController.show(); // inline ads immediately show themselves
         }

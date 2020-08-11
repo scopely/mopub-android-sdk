@@ -93,7 +93,7 @@ public class AdViewController implements AdLifecycleListener.LoadListener, AdLif
     @NonNull
     private final AdLoader.Listener mAdListener;
     @Nullable
-    private AdResponse mAdResponse;
+    protected AdResponse mAdResponse;
     @Nullable
     private String mBaseAdClassName;
     private final Runnable mRefreshRunnable;
@@ -479,6 +479,10 @@ public class AdViewController implements AdLifecycleListener.LoadListener, AdLif
         return "";
     }
 
+    public String getLineItemId() {
+        return mAdResponse.getLineItemId();
+    }
+
     public boolean getAllowCustomClose() {
         if (mAdResponse == null) {
             return false;
@@ -723,6 +727,8 @@ public class AdViewController implements AdLifecycleListener.LoadListener, AdLif
         }
 
         invalidateAdapter();
+
+        moPubAd.loadBaseAd();
 
         MoPubLog.log(CUSTOM, "Loading ad adapter.");
 

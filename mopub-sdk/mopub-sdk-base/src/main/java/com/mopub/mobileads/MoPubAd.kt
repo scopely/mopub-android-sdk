@@ -110,4 +110,9 @@ interface MoPubAd : LoadListener, InteractionListener {
     fun getLocation(): Location? {
         return getAdViewController()?.location
     }
+
+    @JvmDefault
+    fun loadBaseAd() {
+        getAdViewController()?.loadBaseAd();
+    }
 }
