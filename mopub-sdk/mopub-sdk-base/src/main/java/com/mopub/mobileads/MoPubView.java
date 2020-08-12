@@ -361,14 +361,16 @@ public class MoPubView extends FrameLayout implements MoPubAd {
         if (mBannerCustomEventAdListener != null) {
             mBannerCustomEventAdListener.onCustomEventBannerFailed(this, errorCode);
         }
-        return mAdViewController.loadFailUrl(errorCode);
+        return mAdViewController != null && mAdViewController.loadFailUrl(errorCode);
     }
 
     @Override
     public void loadBaseAd() {
-
         if (mBannerCustomEventAdListener != null) {
             mBannerCustomEventAdListener.onCustomEventBannerAttempted(this, mAdViewController.mAdResponse.getBaseAdClassName(), getLineItemId());
+        }
+        if (mAdViewController != null) {
+            mAdViewController.loadBaseAd();
         }
     }
 
