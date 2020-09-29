@@ -150,14 +150,14 @@ public class MoPubView extends FrameLayout implements MoPubAd {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            setWindowInsets(getRootWindowInsets());
+            mAdViewController.setWindowInsets(getRootWindowInsets());
         }
     }
 
     @Override
     public WindowInsets onApplyWindowInsets(WindowInsets insets) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            setWindowInsets(insets);
+            mAdViewController.setWindowInsets(insets);
         }
         return super.onApplyWindowInsets(insets);
     }
