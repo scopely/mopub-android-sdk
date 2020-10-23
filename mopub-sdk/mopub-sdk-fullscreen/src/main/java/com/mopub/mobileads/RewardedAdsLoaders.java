@@ -136,6 +136,26 @@ class RewardedAdsLoaders {
         loaderRewardedVideo.creativeDownloadSuccess();
     }
 
+    String getDspCreativeId(String adUnitId) {
+        AdLoaderRewardedVideo loaderRewardedVideo = mAdUnitToAdLoader.get(adUnitId);
+        if (loaderRewardedVideo == null ||
+                loaderRewardedVideo.getLastDeliveredResponse() == null) {
+            return "";
+        }
+
+        return loaderRewardedVideo.getLastDeliveredResponse().getDspCreativeId();
+    }
+
+    String getLineItemId(String adUnitId) {
+        AdLoaderRewardedVideo loaderRewardedVideo = mAdUnitToAdLoader.get(adUnitId);
+        if (loaderRewardedVideo == null ||
+                loaderRewardedVideo.getLastDeliveredResponse() == null) {
+            return "";
+        }
+
+        return loaderRewardedVideo.getLastDeliveredResponse().getAdGroupId();
+    }
+
     @Deprecated
     @VisibleForTesting
     void clearMapping() {

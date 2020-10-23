@@ -31,6 +31,10 @@ interface MoPubAd : LoadListener, InteractionListener {
     }
 
     @JvmDefault
+    fun loadBaseAd() {
+    }
+
+    @JvmDefault
     fun setAdContentView(view: View) {
         getAdViewController()?.run { setAdContentView(view) }
     }
@@ -80,6 +84,10 @@ interface MoPubAd : LoadListener, InteractionListener {
     @JvmDefault
     fun loadFailUrl(errorCode: MoPubErrorCode): Boolean {
         return getAdViewController()?.loadFailUrl(errorCode) ?: false
+    }
+
+    @JvmDefault
+    fun customLoadFailUrl(errorCode: MoPubErrorCode) {
     }
 
     @JvmDefault

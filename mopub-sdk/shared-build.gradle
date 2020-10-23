@@ -15,7 +15,7 @@ repositories {
 }
 
 project.group = 'com.mopub'
-project.version = '5.14.0'
+project.version = '5.14.0.0-scopely'
 
 android {
     compileOptions {
