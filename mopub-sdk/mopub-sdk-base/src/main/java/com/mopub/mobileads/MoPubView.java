@@ -49,7 +49,7 @@ public class MoPubView extends FrameLayout implements MoPubAd {
 
     public interface BannerCustomEventAdListener {
         void onCustomEventBannerAttempted(MoPubView banner, String customEventClassName, String lineItemId);
-        void onCustomEventBannerAttemptSucceeded(MoPubView banner, String creativeId);
+        void onCustomEventBannerAttemptSucceeded(MoPubView banner, String creativeId, Double publisherRevenue);
         void onCustomEventBannerAttemptFailed(MoPubView banner, MoPubErrorCode errorCode);
     }
 
@@ -405,6 +405,14 @@ public class MoPubView extends FrameLayout implements MoPubAd {
         return lineItemId;
     }
 
+    private Double getPublisherRevenue() {
+        Double publisherRevenue = null;
+        if (getAdViewController() != null) {
+            publisherRevenue = getAdViewController().getPublisherRevenue();
+        }
+        return publisherRevenue;
+    }
+
     @Override
     public void onAdLoaded() {
         if (mAdViewController != null) {
@@ -412,7 +420,7 @@ public class MoPubView extends FrameLayout implements MoPubAd {
         }
 
         if (mBannerCustomEventAdListener != null) {
-            mBannerCustomEventAdListener.onCustomEventBannerAttemptSucceeded(this, getCreativeId());
+            mBannerCustomEventAdListener.onCustomEventBannerAttemptSucceeded(this, getCreativeId(), getPublisherRevenue());
         }
 
         if (mBannerAdListener != null) {
