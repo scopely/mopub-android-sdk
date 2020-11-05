@@ -371,6 +371,14 @@ public class MoPubInterstitial implements MoPubAd {
         return lineItemId;
     }
 
+    private Double getPublisherRevenue() {
+        Double publisherRevenue = null;
+        if (getAdViewController() != null) {
+            publisherRevenue = getAdViewController().getPublisherRevenue();
+        }
+        return publisherRevenue;
+    }
+
     @Override
     public void onAdLoaded() {
         if (isDestroyed()) {
@@ -378,9 +386,8 @@ public class MoPubInterstitial implements MoPubAd {
         }
 
         if (mInterstitialCustomEventAdListener != null) {
-            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this, getCreativeId());
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this, getCreativeId(), getPublisherRevenue());
         }
-
         attemptStateTransition(READY);
     }
 

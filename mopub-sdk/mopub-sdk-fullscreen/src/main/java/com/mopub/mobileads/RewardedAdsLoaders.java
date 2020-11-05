@@ -156,6 +156,17 @@ class RewardedAdsLoaders {
         return loaderRewardedVideo.getLastDeliveredResponse().getAdGroupId();
     }
 
+    Double getPublisherRevenue(String adUnitId) {
+        AdLoaderRewardedVideo loaderRewardedVideo = mAdUnitToAdLoader.get(adUnitId);
+        if (loaderRewardedVideo == null ||
+                loaderRewardedVideo.getLastDeliveredResponse() == null ||
+                loaderRewardedVideo.getLastDeliveredResponse().getImpressionData() == null) {
+            return null;
+        }
+
+        return loaderRewardedVideo.getLastDeliveredResponse().getImpressionData().getPublisherRevenue();
+    }
+
     @Deprecated
     @VisibleForTesting
     void clearMapping() {

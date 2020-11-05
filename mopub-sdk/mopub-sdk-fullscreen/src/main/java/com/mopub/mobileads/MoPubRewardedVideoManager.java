@@ -733,7 +733,8 @@ public class MoPubRewardedVideoManager {
             protected void forEach(@NonNull final String adUnitId) {
                 if (sInstance.mCustomEventAdListener != null) {
                     sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttemptSucceeded(
-                            adUnitId, sInstance.rewardedAdsLoaders.getDspCreativeId(adUnitId));
+                            adUnitId, sInstance.rewardedAdsLoaders.getDspCreativeId(adUnitId),
+                            sInstance.rewardedAdsLoaders.getPublisherRevenue(adUnitId));
                 }
                 sInstance.cancelTimeouts(adUnitId);
                 sInstance.rewardedAdsLoaders.creativeDownloadSuccess(adUnitId);
