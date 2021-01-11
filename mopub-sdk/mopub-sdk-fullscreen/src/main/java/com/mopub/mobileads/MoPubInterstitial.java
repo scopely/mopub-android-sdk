@@ -386,7 +386,7 @@ public class MoPubInterstitial implements MoPubAd {
     @Override
     public void customLoadFailUrl(@NotNull MoPubErrorCode errorCode) {
         if (mInterstitialCustomEventAdListener != null) {
-            mInterstitialCustomEventAdListener.onCustomEventInterstitialFailed(this, errorCode);
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialFailed(this, errorCode, getAdViewController().getImpressionData());
         }
     }
 
