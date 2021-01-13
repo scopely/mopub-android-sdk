@@ -752,7 +752,7 @@ public class MoPubRewardedVideoManager {
                 sInstance.cancelTimeouts(adUnitId);
                 sInstance.failover(adUnitId, errorCode);
                 if (sInstance.mCustomEventAdListener != null) {
-                    sInstance.mCustomEventAdListener.onCustomEventRewardedVideoFailed(adUnitId, errorCode);
+                    sInstance.mCustomEventAdListener.onCustomEventRewardedVideoFailed(adUnitId, errorCode, sInstance.rewardedAdsLoaders.getImpressionData(adUnitId));
                 }
             }
         });
