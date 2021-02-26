@@ -503,9 +503,9 @@ public class AdViewController implements AdLifecycleListener.LoadListener, AdLif
         return "";
     }
 
-    public Double getPublisherRevenue() {
+    public ImpressionData getImpressionData() {
         if (mAdUnitId != null && mAdResponse != null && mAdResponse.getImpressionData() != null) {
-            return mAdResponse.getImpressionData().getPublisherRevenue();
+            return mAdResponse.getImpressionData();
         }
         return null;
     }
