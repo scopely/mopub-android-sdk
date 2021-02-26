@@ -568,6 +568,7 @@ public class MoPubRewardedVideoManager {
                 .timeoutDelayMillis(timeoutDelayMillis)
                 .customerId(mRewardedAdData.getCustomerId())
                 .allowCustomClose(false)
+                .viewabilityVendors(adResponse.getViewabilityVendors())
                 .fullAdType(adResponse.getFullAdType())
                 .extras(serverExtras);
 
