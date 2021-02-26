@@ -13,6 +13,7 @@ import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.network.AdLoader;
 import com.mopub.network.AdResponse;
+import com.mopub.network.ImpressionData;
 import com.mopub.volley.Request;
 import com.mopub.volley.VolleyError;
 
@@ -156,7 +157,7 @@ class RewardedAdsLoaders {
         return loaderRewardedVideo.getLastDeliveredResponse().getAdGroupId();
     }
 
-    Double getPublisherRevenue(String adUnitId) {
+    ImpressionData getImpressionData(String adUnitId) {
         AdLoaderRewardedVideo loaderRewardedVideo = mAdUnitToAdLoader.get(adUnitId);
         if (loaderRewardedVideo == null ||
                 loaderRewardedVideo.getLastDeliveredResponse() == null ||
@@ -164,7 +165,7 @@ class RewardedAdsLoaders {
             return null;
         }
 
-        return loaderRewardedVideo.getLastDeliveredResponse().getImpressionData().getPublisherRevenue();
+        return loaderRewardedVideo.getLastDeliveredResponse().getImpressionData();
     }
 
     @Deprecated

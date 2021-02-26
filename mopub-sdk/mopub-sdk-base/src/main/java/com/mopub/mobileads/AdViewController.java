@@ -37,6 +37,7 @@ import com.mopub.common.util.Reflection;
 import com.mopub.common.util.Utils;
 import com.mopub.network.AdLoader;
 import com.mopub.network.AdResponse;
+import com.mopub.network.ImpressionData;
 import com.mopub.network.MoPubNetworkError;
 import com.mopub.network.SingleImpression;
 import com.mopub.network.TrackingRequest;
@@ -502,9 +503,9 @@ public class AdViewController implements AdLifecycleListener.LoadListener, AdLif
         return "";
     }
 
-    public Double getPublisherRevenue() {
+    public ImpressionData getImpressionData() {
         if (mAdUnitId != null && mAdResponse != null && mAdResponse.getImpressionData() != null) {
-            return mAdResponse.getImpressionData().getPublisherRevenue();
+            return mAdResponse.getImpressionData();
         }
         return null;
     }

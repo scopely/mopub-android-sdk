@@ -371,22 +371,14 @@ public class MoPubInterstitial implements MoPubAd {
         return lineItemId;
     }
 
-    private Double getPublisherRevenue() {
-        Double publisherRevenue = null;
-        if (getAdViewController() != null) {
-            publisherRevenue = getAdViewController().getPublisherRevenue();
-        }
-        return publisherRevenue;
-    }
-
     @Override
     public void onAdLoaded() {
         if (isDestroyed()) {
             return;
         }
 
-        if (mInterstitialCustomEventAdListener != null) {
-            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this, getCreativeId(), getPublisherRevenue());
+        if (mInterstitialCustomEventAdListener != null && getAdViewController() != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this, getCreativeId(), getAdViewController().getImpressionData());
         }
         attemptStateTransition(READY);
     }
@@ -401,8 +393,8 @@ public class MoPubInterstitial implements MoPubAd {
     @Override
     public void loadBaseAd() {
 
-        if (mInterstitialCustomEventAdListener != null) {
-            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttempted(this, mAdViewController.getBaseAdClassName(), getLineItemId());
+        if (mInterstitialCustomEventAdListener != null && getAdViewController() != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttempted(this, getAdViewController().getBaseAdClassName(), getLineItemId());
         }
     }
 

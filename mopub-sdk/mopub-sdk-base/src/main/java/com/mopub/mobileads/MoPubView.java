@@ -30,6 +30,7 @@ import com.mopub.common.util.ManifestUtils;
 import com.mopub.common.util.Visibility;
 import com.mopub.mobileads.base.R;
 import com.mopub.mobileads.factories.AdViewControllerFactory;
+import com.mopub.network.ImpressionData;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -49,7 +50,7 @@ public class MoPubView extends FrameLayout implements MoPubAd {
 
     public interface BannerCustomEventAdListener {
         void onCustomEventBannerAttempted(MoPubView banner, String customEventClassName, String lineItemId);
-        void onCustomEventBannerAttemptSucceeded(MoPubView banner, String creativeId, Double publisherRevenue);
+        void onCustomEventBannerAttemptSucceeded(MoPubView banner, String creativeId, ImpressionData impressionData);
         void onCustomEventBannerAttemptFailed(MoPubView banner, MoPubErrorCode errorCode);
     }
 
@@ -391,26 +392,18 @@ public class MoPubView extends FrameLayout implements MoPubAd {
 
     private String getCreativeId() {
         String creativeId = "";
-        if (mAdViewController != null) {
-            creativeId = mAdViewController.getDspCreativeId();
+        if (getAdViewController() != null) {
+            creativeId = getAdViewController().getDspCreativeId();
         }
         return creativeId;
     }
 
     private String getLineItemId() {
         String lineItemId = "";
-        if (mAdViewController != null ) {
-            lineItemId = mAdViewController.getLineItemId();
+        if (getAdViewController() != null ) {
+            lineItemId = getAdViewController().getLineItemId();
         }
         return lineItemId;
-    }
-
-    private Double getPublisherRevenue() {
-        Double publisherRevenue = null;
-        if (getAdViewController() != null) {
-            publisherRevenue = getAdViewController().getPublisherRevenue();
-        }
-        return publisherRevenue;
     }
 
     @Override
@@ -419,8 +412,8 @@ public class MoPubView extends FrameLayout implements MoPubAd {
             mAdViewController.show(); // inline ads immediately show themselves
         }
 
-        if (mBannerCustomEventAdListener != null) {
-            mBannerCustomEventAdListener.onCustomEventBannerAttemptSucceeded(this, getCreativeId(), getPublisherRevenue());
+        if (mBannerCustomEventAdListener != null && getAdViewController() != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerAttemptSucceeded(this, getCreativeId(), getAdViewController().getImpressionData());
         }
 
         if (mBannerAdListener != null) {
@@ -437,8 +430,8 @@ public class MoPubView extends FrameLayout implements MoPubAd {
 
     @Override
     public void loadBaseAd() {
-        if (mBannerCustomEventAdListener != null) {
-            mBannerCustomEventAdListener.onCustomEventBannerAttempted(this, mAdViewController.getBaseAdClassName(), getLineItemId());
+        if (mBannerCustomEventAdListener != null && getAdViewController() != null) {
+            mBannerCustomEventAdListener.onCustomEventBannerAttempted(this, getAdViewController().getBaseAdClassName(), getLineItemId());
         }
     }
 
