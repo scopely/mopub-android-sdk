@@ -80,6 +80,7 @@ public class MoPubRewardedAdManager {
     private static final String CURRENCIES_JSON_REWARD_AMOUNT_KEY = "amount";
     @VisibleForTesting
     static final int CUSTOM_DATA_MAX_LENGTH_BYTES = 8192;
+    @Nullable private RewardedVideoCustomEventAdListener mCustomEventAdListener;
 
     /**
      * This must an integer because the backend only supports int types for api version.
@@ -250,6 +251,14 @@ public class MoPubRewardedAdManager {
     public static void setRewardedAdListener(@Nullable MoPubRewardedAdListener listener) {
         if (sInstance != null) {
             sInstance.mRewardedAdListener = listener;
+        } else {
+            logErrorNotInitialized();
+        }
+    }
+
+    public static void setVideoCustomListener(@Nullable RewardedVideoCustomEventAdListener listener) {
+        if (sInstance != null) {
+            sInstance.mCustomEventAdListener = listener;
         } else {
             logErrorNotInitialized();
         }
@@ -582,6 +591,10 @@ public class MoPubRewardedAdManager {
         // Load base ad
         MoPubLog.log(CUSTOM, String.format(Locale.US,
                 "Loading base ad with class name %s", baseAdClassName));
+        if (sInstance.mCustomEventAdListener != null) {
+            sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttempted(adUnitId,
+                    baseAdClassName, sInstance.rewardedAdsLoaders.getLineItemId(adUnitId));
+        }
 
         try {
             // Instantiate ad adapter
@@ -721,6 +734,11 @@ public class MoPubRewardedAdManager {
         postToInstance(new ForEachAdUnitIdRunnable(adAdapter) {
             @Override
             protected void forEach(@NonNull final String adUnitId) {
+                if (sInstance.mCustomEventAdListener != null) {
+                    sInstance.mCustomEventAdListener.onCustomEventRewardedVideoAttemptSucceeded(
+                            adUnitId, sInstance.rewardedAdsLoaders.getDspCreativeId(adUnitId),
+                            sInstance.rewardedAdsLoaders.getImpressionData(adUnitId));
+                }
                 sInstance.cancelTimeouts(adUnitId);
                 sInstance.rewardedAdsLoaders.creativeDownloadSuccess(adUnitId);
                 if (sInstance.mRewardedAdListener != null) {
@@ -736,6 +754,9 @@ public class MoPubRewardedAdManager {
             protected void forEach(@NonNull final String adUnitId) {
                 sInstance.cancelTimeouts(adUnitId);
                 sInstance.failover(adUnitId, errorCode);
+                if (sInstance.mCustomEventAdListener != null) {
+                    sInstance.mCustomEventAdListener.onCustomEventRewardedVideoFailed(adUnitId, errorCode, sInstance.rewardedAdsLoaders.getImpressionData(adUnitId));
+                }
                 if (adUnitId.equals(sInstance.mRewardedAdData.getCurrentlyShowingAdUnitId())) {
                     sInstance.mRewardedAdData.setCurrentlyShowingAdUnitId(null);
                 }

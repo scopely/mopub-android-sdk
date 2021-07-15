@@ -23,6 +23,8 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.DeviceUtils;
 import com.mopub.mobileads.factories.AdViewControllerFactory;
 
+import org.jetbrains.annotations.NotNull;
+
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.CLICKED;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.DID_DISAPPEAR;
@@ -69,6 +71,7 @@ public class MoPubInterstitial implements MoPubAd {
 
     @Nullable protected AdViewController mAdViewController;
     @Nullable private InterstitialAdListener mInterstitialAdListener;
+    @Nullable private InterstitialCustomEventAdListener mInterstitialCustomEventAdListener;
     @NonNull private Activity mActivity;
     @NonNull private Handler mHandler;
     @NonNull private volatile InterstitialState mCurrentInterstitialState;
@@ -330,6 +333,10 @@ public class MoPubInterstitial implements MoPubAd {
         mInterstitialAdListener = listener;
     }
 
+    public void setInterstitialCustomEventAdListener(@Nullable final InterstitialCustomEventAdListener listener) {
+        mInterstitialCustomEventAdListener = listener;
+    }
+
     @Nullable
     public InterstitialAdListener getInterstitialAdListener() {
         return mInterstitialAdListener;
@@ -348,13 +355,47 @@ public class MoPubInterstitial implements MoPubAd {
         }
     }
 
+    private String getCreativeId() {
+        String creativeId = "";
+        if (getAdViewController() != null) {
+            creativeId = getAdViewController().getDspCreativeId();
+        }
+        return creativeId;
+    }
+
+    private String getLineItemId() {
+        String lineItemId = "";
+        if (getAdViewController() != null) {
+            lineItemId = getAdViewController().getLineItemId();
+        }
+        return lineItemId;
+    }
+
     @Override
     public void onAdLoaded() {
         if (isDestroyed()) {
             return;
         }
 
+        if (mInterstitialCustomEventAdListener != null && getAdViewController() != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttemptSucceeded(this, getCreativeId(), getAdViewController().getImpressionData());
+        }
         attemptStateTransition(READY);
+    }
+
+    @Override
+    public void customLoadFailUrl(@NotNull MoPubErrorCode errorCode) {
+        if (mInterstitialCustomEventAdListener != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialFailed(this, errorCode, getAdViewController().getImpressionData());
+        }
+    }
+
+    @Override
+    public void loadBaseAd() {
+
+        if (mInterstitialCustomEventAdListener != null && getAdViewController() != null) {
+            mInterstitialCustomEventAdListener.onCustomEventInterstitialAttempted(this, getAdViewController().getBaseAdClassName(), getLineItemId());
+        }
     }
 
     /*

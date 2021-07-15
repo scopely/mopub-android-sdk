@@ -37,6 +37,7 @@ import com.mopub.common.util.Reflection;
 import com.mopub.common.util.Utils;
 import com.mopub.network.AdLoader;
 import com.mopub.network.AdResponse;
+import com.mopub.network.ImpressionData;
 import com.mopub.network.MoPubNetworkError;
 import com.mopub.network.MoPubNetworkResponse;
 import com.mopub.network.MoPubRequest;
@@ -318,6 +319,11 @@ public class AdViewController implements AdLifecycleListener.LoadListener, AdLif
      * Returns true if continuing to load the failover url, false if the ad actually did not fill.
      */
     boolean loadFailUrl(final MoPubErrorCode errorCode) {
+        final MoPubAd moPubAd = getMoPubAd();
+        if (moPubAd != null) {
+            moPubAd.customLoadFailUrl(errorCode);
+        }
+
         if (errorCode == null) {
             MoPubLog.log(CUSTOM_WITH_THROWABLE,
                     "Load failed.",
@@ -483,6 +489,20 @@ public class AdViewController implements AdLifecycleListener.LoadListener, AdLif
             return mAdResponse.getDspCreativeId();
         }
         return "";
+    }
+
+    public String getLineItemId() {
+        if (mAdUnitId != null && mAdResponse != null) {
+            return mAdResponse.getAdGroupId();
+        }
+        return "";
+    }
+
+    public ImpressionData getImpressionData() {
+        if (mAdUnitId != null && mAdResponse != null && mAdResponse.getImpressionData() != null) {
+            return mAdResponse.getImpressionData();
+        }
+        return null;
     }
 
     public boolean getAllowCustomClose() {
@@ -736,7 +756,7 @@ public class AdViewController implements AdLifecycleListener.LoadListener, AdLif
         }
 
         invalidateAdapter();
-
+        moPubAd.loadBaseAd();
         MoPubLog.log(CUSTOM, "Loading ad adapter.");
 
         final Map<String, String> extras = new TreeMap<>(serverExtras);

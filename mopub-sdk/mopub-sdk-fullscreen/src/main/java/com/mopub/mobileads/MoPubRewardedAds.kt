@@ -10,6 +10,7 @@ import com.mopub.common.MoPubReward
 import com.mopub.common.SdkConfiguration
 import com.mopub.common.util.ReflectionTarget
 
+
 /**
  * MoPubRewardedAds is a utility class that holds controller methods for other MoPub rewarded
  * ad classes.
@@ -33,6 +34,11 @@ object MoPubRewardedAds {
     @JvmStatic
     fun setRewardedAdListener(listener: MoPubRewardedAdListener?) {
         MoPubRewardedAdManager.setRewardedAdListener(listener)
+    }
+
+    @ReflectionTarget
+    fun setRewardedVideoCustomEventAdListener(listener: RewardedVideoCustomEventAdListener?) {
+        MoPubRewardedAdManager.setVideoCustomListener(listener)
     }
 
     /**

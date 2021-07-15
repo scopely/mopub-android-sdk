@@ -15,6 +15,8 @@ import com.mopub.network.AdLoader;
 import com.mopub.network.AdResponse;
 import com.mopub.network.MoPubNetworkError;
 import com.mopub.network.MoPubRequest;
+import com.mopub.network.ImpressionData;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -130,6 +132,37 @@ class RewardedAdsLoaders {
         }
 
         loaderRewardedAd.creativeDownloadSuccess();
+    }
+
+    String getDspCreativeId(String adUnitId) {
+        AdLoaderRewardedAd loaderRewardedVideo = mAdUnitToAdLoader.get(adUnitId);
+        if (loaderRewardedVideo == null ||
+                loaderRewardedVideo.getLastDeliveredResponse() == null) {
+            return "";
+        }
+
+        return loaderRewardedVideo.getLastDeliveredResponse().getDspCreativeId();
+    }
+
+    String getLineItemId(String adUnitId) {
+        AdLoaderRewardedAd loaderRewardedVideo = mAdUnitToAdLoader.get(adUnitId);
+        if (loaderRewardedVideo == null ||
+                loaderRewardedVideo.getLastDeliveredResponse() == null) {
+            return "";
+        }
+
+        return loaderRewardedVideo.getLastDeliveredResponse().getAdGroupId();
+    }
+
+    ImpressionData getImpressionData(String adUnitId) {
+        AdLoaderRewardedAd loaderRewardedVideo = mAdUnitToAdLoader.get(adUnitId);
+        if (loaderRewardedVideo == null ||
+                loaderRewardedVideo.getLastDeliveredResponse() == null ||
+                loaderRewardedVideo.getLastDeliveredResponse().getImpressionData() == null) {
+            return null;
+        }
+
+        return loaderRewardedVideo.getLastDeliveredResponse().getImpressionData();
     }
 
     @Deprecated

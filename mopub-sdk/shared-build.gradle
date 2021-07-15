@@ -14,8 +14,9 @@ repositories {
     }
 }
 
-project.group = 'com.mopub'
-project.version = '5.17.0'
+project.group = 'com.scopely.ads.mopub'
+project.version = '5.17.0.0'
+
 
 android {
     compileOptions {
